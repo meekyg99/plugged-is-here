@@ -1,6 +1,4 @@
-import { Instagram, Facebook, Twitter } from 'lucide-react';
-import { Ghost } from 'lucide-react';
-import { CreditCard } from 'lucide-react';
+import { Instagram, Facebook, Twitter, Ghost, Mail, Phone } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -10,15 +8,25 @@ export default function Footer() {
           {/* Customer Care */}
           <div>
             <h3 className="text-sm tracking-widest uppercase mb-6 font-semibold">
-              Customer Care
+              Contact Us
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               <li>
                 <a
-                  href="#"
-                  className="text-sm tracking-wider hover:opacity-60 transition-opacity"
+                  href="mailto:info@pluggedby212.com"
+                  className="flex items-center gap-3 text-sm tracking-wider hover:opacity-60 transition-opacity group"
                 >
-                  Contact Us
+                  <Mail className="w-5 h-5 flex-shrink-0" />
+                  <span>info@pluggedby212.com</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="tel:+2341234567890"
+                  className="flex items-center gap-3 text-sm tracking-wider hover:opacity-60 transition-opacity group"
+                >
+                  <Phone className="w-5 h-5 flex-shrink-0" />
+                  <span>+234 123 456 7890</span>
                 </a>
               </li>
             </ul>
@@ -26,37 +34,37 @@ export default function Footer() {
 
           {/* Follow Us */}
           <div>
-            <h3 className="text-sm tracking-widest uppercase mb-6 font-semibold">
+            <h3 className="text-sm tracking-widest uppercase mb-4 font-semibold">
               Follow Us
             </h3>
-            <div className="flex space-x-3 mb-6">
+            <div className="flex space-x-2 mb-5">
               <a
                 href="#"
-                className="group p-3 border border-black hover:bg-black transition-all duration-300 rounded-full"
+                className="group p-2 border border-black hover:bg-black transition-all duration-300 rounded-full"
                 aria-label="Instagram"
               >
-                <Instagram className="w-5 h-5 group-hover:text-white transition-colors" />
+                <Instagram className="w-4 h-4 group-hover:text-white transition-colors" />
               </a>
               <a
                 href="#"
-                className="group p-3 border border-black hover:bg-black transition-all duration-300 rounded-full"
+                className="group p-2 border border-black hover:bg-black transition-all duration-300 rounded-full"
                 aria-label="Facebook"
               >
-                <Facebook className="w-5 h-5 group-hover:text-white transition-colors" />
+                <Facebook className="w-4 h-4 group-hover:text-white transition-colors" />
               </a>
               <a
                 href="#"
-                className="group p-3 border border-black hover:bg-black transition-all duration-300 rounded-full"
+                className="group p-2 border border-black hover:bg-black transition-all duration-300 rounded-full"
                 aria-label="Twitter"
               >
-                <Twitter className="w-5 h-5 group-hover:text-white transition-colors" />
+                <Twitter className="w-4 h-4 group-hover:text-white transition-colors" />
               </a>
               <a
                 href="#"
-                className="group p-3 border border-black hover:bg-black transition-all duration-300 rounded-full"
+                className="group p-2 border border-black hover:bg-black transition-all duration-300 rounded-full"
                 aria-label="Snapchat"
               >
-                <Ghost className="w-5 h-5 group-hover:text-white transition-colors" />
+                <Ghost className="w-4 h-4 group-hover:text-white transition-colors" />
               </a>
             </div>
 
