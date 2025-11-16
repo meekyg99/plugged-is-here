@@ -21,30 +21,6 @@ export default function Footer() {
                   Contact Us
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm tracking-wider hover:opacity-60 transition-opacity"
-                >
-                  Shipping & Returns
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm tracking-wider hover:opacity-60 transition-opacity"
-                >
-                  Size Guide
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm tracking-wider hover:opacity-60 transition-opacity"
-                >
-                  FAQ
-                </a>
-              </li>
             </ul>
           </div>
 

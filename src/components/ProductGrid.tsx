@@ -2,155 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Eye, Heart, Star } from 'lucide-react';
 import QuickView from './QuickView';
 
-const products = [
-  {
-    id: 1,
-    name: 'Leather Jacket',
-    price: '₦1,156,000',
-    category: 'Outerwear',
-    type: 'clothing',
-    rating: 4.8,
-    reviewCount: 124,
-    images: [
-      'https://images.pexels.com/photos/1124468/pexels-photo-1124468.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1050850/pexels-photo-1050850.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    colors: [
-      { name: 'Black', hex: '#000000' },
-      { name: 'Brown', hex: '#8B4513' },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Denim Jeans',
-    price: '₦356,000',
-    category: 'Denim',
-    type: 'clothing',
-    rating: 4.5,
-    reviewCount: 89,
-    images: [
-      'https://images.pexels.com/photos/1346187/pexels-photo-1346187.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/603022/pexels-photo-603022.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['28', '30', '32', '34', '36', '38'],
-    colors: [
-      { name: 'Blue', hex: '#1E3A8A' },
-      { name: 'Black', hex: '#000000' },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Logo T-Shirt',
-    price: '₦136,000',
-    category: 'Tops',
-    type: 'clothing',
-    rating: 4.6,
-    reviewCount: 203,
-    images: [
-      'https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/2294342/pexels-photo-2294342.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    colors: [
-      { name: 'White', hex: '#FFFFFF' },
-      { name: 'Black', hex: '#000000' },
-      { name: 'Gray', hex: '#6B7280' },
-    ],
-  },
-  {
-    id: 4,
-    name: 'Bandana Boots',
-    price: '₦636,000',
-    category: 'Footwear',
-    type: 'shoes',
-    rating: 4.7,
-    reviewCount: 67,
-    images: [
-      'https://images.pexels.com/photos/336372/pexels-photo-336372.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1598508/pexels-photo-1598508.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['7', '8', '9', '10', '11', '12'],
-    colors: [
-      { name: 'Black', hex: '#000000' },
-      { name: 'Brown', hex: '#8B4513' },
-    ],
-  },
-  {
-    id: 5,
-    name: 'Varsity Jacket',
-    price: '₦1,280,000',
-    category: 'Outerwear',
-    type: 'clothing',
-    rating: 4.9,
-    reviewCount: 156,
-    images: [
-      'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/1362534/pexels-photo-1362534.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: [
-      { name: 'Navy', hex: '#1E3A8A' },
-      { name: 'Black', hex: '#000000' },
-    ],
-  },
-  {
-    id: 6,
-    name: 'Silk Shirt',
-    price: '₦580,000',
-    category: 'Tops',
-    type: 'clothing',
-    rating: 4.4,
-    reviewCount: 92,
-    images: [
-      'https://images.pexels.com/photos/1972115/pexels-photo-1972115.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/297933/pexels-photo-297933.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['S', 'M', 'L', 'XL'],
-    colors: [
-      { name: 'White', hex: '#FFFFFF' },
-      { name: 'Cream', hex: '#FEF3C7' },
-      { name: 'Black', hex: '#000000' },
-    ],
-  },
-  {
-    id: 7,
-    name: 'Bandana Print Hoodie',
-    price: '₦356,000',
-    category: 'Tops',
-    type: 'clothing',
-    rating: 4.6,
-    reviewCount: 178,
-    images: [
-      'https://images.pexels.com/photos/3054973/pexels-photo-3054973.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/3755707/pexels-photo-3755707.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: [
-      { name: 'Black', hex: '#000000' },
-      { name: 'Gray', hex: '#6B7280' },
-      { name: 'Navy', hex: '#1E3A8A' },
-    ],
-  },
-  {
-    id: 8,
-    name: 'Leather Sneakers',
-    price: '₦396,000',
-    category: 'Footwear',
-    type: 'shoes',
-    rating: 4.7,
-    reviewCount: 134,
-    images: [
-      'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=800',
-      'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=800',
-    ],
-    sizes: ['7', '8', '9', '10', '11', '12', '13'],
-    colors: [
-      { name: 'White', hex: '#FFFFFF' },
-      { name: 'Black', hex: '#000000' },
-    ],
-  },
-];
+const products: any[] = [];
 
 export default function ProductGrid() {
   const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
@@ -210,8 +62,15 @@ export default function ProductGrid() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-          {products.map((product, index) => (
+        {products.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500 text-lg tracking-wider">
+              No products available yet
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+            {products.map((product, index) => (
             <div
               key={product.id}
               ref={(el) => (productRefs.current[index] = el)}
@@ -339,12 +198,15 @@ export default function ProductGrid() {
             </div>
           ))}
         </div>
+        )}
 
-        <div className="text-center mt-16">
-          <button className="px-12 py-3 bg-black text-white text-sm tracking-widest uppercase hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105">
-            View All Products
-          </button>
-        </div>
+        {products.length > 0 && (
+          <div className="text-center mt-16">
+            <button className="px-12 py-3 bg-black text-white text-sm tracking-widest uppercase hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105">
+              View All Products
+            </button>
+          </div>
+        )}
       </div>
 
       <QuickView

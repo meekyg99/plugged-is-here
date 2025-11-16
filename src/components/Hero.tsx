@@ -51,6 +51,12 @@ export default function Hero() {
                 2024 Collection
               </p>
               <button
+                onClick={() => {
+                  const categoriesSection = document.querySelector('[data-categories-section]');
+                  if (categoriesSection) {
+                    categoriesSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
                 className={`mt-8 px-12 py-3 bg-black text-white text-sm tracking-widest uppercase hover:bg-gray-800 transition-all duration-500 delay-600 shadow-lg hover:shadow-2xl hover:scale-105 ${
                   isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
@@ -66,7 +72,7 @@ export default function Hero() {
       </div>
 
       {/* Featured Banner */}
-      <div className="grid grid-cols-1 lg:grid-cols-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3" data-categories-section>
         <div className="relative h-[60vh] lg:h-[80vh] overflow-hidden group">
           <img
             src="https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=1200"
@@ -79,12 +85,9 @@ export default function Hero() {
               <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
                 Men's Collection
               </h2>
-              <a
-                href="#"
-                className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
-              >
+              <button className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl">
                 Explore
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -101,12 +104,9 @@ export default function Hero() {
               <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
                 Women's Collection
               </h2>
-              <a
-                href="#"
-                className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
-              >
+              <button className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl">
                 Explore
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -123,12 +123,9 @@ export default function Hero() {
               <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
                 Accessories Collection
               </h2>
-              <a
-                href="#"
-                className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
-              >
+              <button className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl">
                 Explore
-              </a>
+              </button>
             </div>
           </div>
         </div>
