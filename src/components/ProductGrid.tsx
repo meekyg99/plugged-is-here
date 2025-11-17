@@ -1,18 +1,75 @@
 import { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Eye, Heart, Star } from 'lucide-react';
 import QuickView from './QuickView';
+import { ProductWithDetails } from '../types/database';
+import { productService } from '../services/productService';
+import { useCart } from '../contexts/CartContext';
 
-const products: any[] = [];
+interface ProductDisplay {
+  id: string;
+  name: string;
+  category: string;
+  price: string;
+  rating: number;
+  reviewCount: number;
+  images: string[];
+  colors: { name: string; hex: string }[];
+  defaultVariantId: string;
+}
 
 export default function ProductGrid() {
-  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
-  const [quickViewProduct, setQuickViewProduct] = useState<typeof products[0] | null>(null);
-  const [wishlist, setWishlist] = useState<number[]>([]);
-  const [visibleProducts, setVisibleProducts] = useState<number[]>([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
+  const [products, setProducts] = useState<ProductDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<ProductDisplay | null>(null);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [visibleProducts, setVisibleProducts] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
   const productRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const { addItem } = useCart();
 
-  const handleImageSwitch = (productId: number) => {
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await productService.getFeaturedProducts();
+      const displayProducts: ProductDisplay[] = data.map((product: ProductWithDetails) => {
+        const uniqueColors = product.variants.reduce((acc: { name: string; hex: string }[], variant) => {
+          if (variant.color && variant.color_hex && !acc.find(c => c.name === variant.color)) {
+            acc.push({ name: variant.color, hex: variant.color_hex });
+          }
+          return acc;
+        }, []);
+
+        const minPrice = Math.min(...product.variants.map(v => v.price));
+        const maxPrice = Math.max(...product.variants.map(v => v.price));
+
+        return {
+          id: product.id,
+          name: product.name,
+          category: product.category?.name || 'Uncategorized',
+          price: minPrice === maxPrice
+            ? `₦${minPrice.toLocaleString()}`
+            : `₦${minPrice.toLocaleString()} - ₦${maxPrice.toLocaleString()}`,
+          rating: 4.5,
+          reviewCount: Math.floor(Math.random() * 50) + 10,
+          images: product.images.sort((a, b) => a.display_order - b.display_order).map(img => img.image_url),
+          colors: uniqueColors,
+          defaultVariantId: product.variants[0]?.id || '',
+        };
+      });
+      setProducts(displayProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageSwitch = (productId: string) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [productId]: prev[productId] === 1 ? 0 : 1,
@@ -40,9 +97,9 @@ export default function ProductGrid() {
     return () => {
       observers.forEach((observer) => observer.disconnect());
     };
-  }, []);
+  }, [products]);
 
-  const toggleWishlist = (productId: number) => {
+  const toggleWishlist = (productId: string) => {
     setWishlist(prev =>
       prev.includes(productId)
         ? prev.filter(id => id !== productId)
@@ -62,7 +119,13 @@ export default function ProductGrid() {
           </p>
         </div>
 
-        {products.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500 text-lg tracking-wider">
+              Loading products...
+            </p>
+          </div>
+        ) : products.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 text-lg tracking-wider">
               No products available yet
@@ -190,6 +253,12 @@ export default function ProductGrid() {
               </div>
 
               <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (product.defaultVariantId) {
+                    addItem(product.defaultVariantId, product.id);
+                  }
+                }}
                 className="mt-4 w-full py-2 bg-black text-white transition-all duration-300 flex items-center justify-center space-x-2 hover:bg-gray-800 shadow-md hover:shadow-lg hover:scale-105"
               >
                 <ShoppingCart className="w-4 h-4" />
@@ -209,11 +278,13 @@ export default function ProductGrid() {
         )}
       </div>
 
-      <QuickView
-        isOpen={quickViewProduct !== null}
-        onClose={() => setQuickViewProduct(null)}
-        product={quickViewProduct || products[0]}
-      />
+      {quickViewProduct && (
+        <QuickView
+          isOpen={quickViewProduct !== null}
+          onClose={() => setQuickViewProduct(null)}
+          product={quickViewProduct}
+        />
+      )}
     </section>
   );
 }

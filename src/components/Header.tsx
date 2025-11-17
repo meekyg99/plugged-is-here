@@ -1,5 +1,8 @@
-import { Search, Briefcase, Menu, X, Heart, ChevronDown } from 'lucide-react';
+import { Search, Briefcase, Menu, X, Heart, ChevronDown, User, LogOut } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import AuthModal from './auth/AuthModal';
 
 interface HeaderProps {
   mobileMenuOpen: boolean;
@@ -7,7 +10,6 @@ interface HeaderProps {
 }
 
 export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProps) {
-  const [cartCount] = useState(0);
   const [wishlistCount] = useState(0);
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [menOpen, setMenOpen] = useState(false);
@@ -15,6 +17,21 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
   const [mobileMenOpen, setMobileMenOpen] = useState(false);
   const [mobileWomenOpen, setMobileWomenOpen] = useState(false);
   const [mobileCollectionsOpen, setMobileCollectionsOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const { itemCount, toggleCart } = useCart();
+
+  const handleAuthClick = (mode: 'signin' | 'signup') => {
+    setAuthMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUserMenuOpen(false);
+  };
 
   return (
     <>
@@ -161,14 +178,70 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                 )}
               </button>
 
-              <button className="relative group p-2 hover:bg-gray-50 rounded-2xl transition-all duration-300">
+              <button
+                onClick={toggleCart}
+                className="relative group p-2 hover:bg-gray-50 rounded-2xl transition-all duration-300"
+              >
                 <Briefcase className="w-5 h-5 transition-transform group-hover:scale-110" />
-                {cartCount > 0 && (
+                {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-semibold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                    {cartCount}
+                    {itemCount}
                   </span>
                 )}
               </button>
+
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="p-2 hover:bg-gray-50 rounded-2xl transition-all duration-300"
+                  >
+                    <User className="w-5 h-5" />
+                  </button>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2">
+                      <div className="px-6 py-3 border-b border-gray-200">
+                        <p className="text-xs uppercase tracking-wider text-gray-500">Signed in as</p>
+                        <p className="text-sm font-medium">{profile?.full_name || user.email}</p>
+                      </div>
+                      <a
+                        href="#account"
+                        className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors"
+                      >
+                        My Account
+                      </a>
+                      <a
+                        href="#orders"
+                        className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors"
+                      >
+                        Orders
+                      </a>
+                      {profile?.role !== 'customer' && (
+                        <a
+                          href="#admin"
+                          className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200"
+                        >
+                          Admin Dashboard
+                        </a>
+                      )}
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full text-left px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200 flex items-center space-x-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleAuthClick('signin')}
+                  className="p-2 hover:bg-gray-50 rounded-2xl transition-all duration-300"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -278,14 +351,45 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
             )}
           </div>
 
-          <a
-            href="#"
-            className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity"
-          >
-            Account
-          </a>
+          {user ? (
+            <>
+              <a
+                href="#account"
+                className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity"
+              >
+                My Account
+              </a>
+              <button
+                onClick={handleSignOut}
+                className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity text-left"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => handleAuthClick('signin')}
+                className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity text-left"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => handleAuthClick('signup')}
+                className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity text-left"
+              >
+                Create Account
+              </button>
+            </>
+          )}
         </nav>
       </div>
+
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultMode={authMode}
+      />
     </>
   );
 }
