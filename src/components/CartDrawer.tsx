@@ -90,9 +90,12 @@ export default function CartDrawer() {
                 <span className="tracking-wider uppercase">Total</span>
                 <span className="font-light">₦{total.toLocaleString()}</span>
               </div>
-              <button className="w-full py-3 bg-black text-white uppercase tracking-wider hover:bg-gray-800 transition-colors">
+              <a
+                href="/checkout"
+                className="w-full py-3 bg-black text-white uppercase tracking-wider hover:bg-gray-800 transition-colors block text-center"
+              >
                 Proceed to Checkout
-              </button>
+              </a>
               <button
                 onClick={toggleCart}
                 className="w-full py-3 border border-black uppercase tracking-wider hover:bg-gray-100 transition-colors"

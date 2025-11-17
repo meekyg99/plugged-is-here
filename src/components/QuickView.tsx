@@ -8,17 +8,14 @@ interface QuickViewProps {
     name: string;
     price: string;
     category: string;
-    type: string;
     rating: number;
     reviewCount: number;
     images: string[];
-    sizes: string[];
     colors: { name: string; hex: string }[];
   };
 }
 
 export default function QuickView({ isOpen, onClose, product }: QuickViewProps) {
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<number>(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -107,26 +104,6 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
               <p className="text-2xl font-light mb-8">{product.price}</p>
 
               <div className="space-y-6 mb-8">
-                <div>
-                  <label className="block text-xs tracking-wider uppercase mb-3 font-semibold">
-                    {product.type === 'shoes' ? 'Shoe Size' : 'Size'}
-                  </label>
-                  <div className="grid grid-cols-6 gap-2">
-                    {product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-2 px-3 border text-sm tracking-wider uppercase transition-all ${
-                          selectedSize === size
-                            ? 'bg-black text-white border-black'
-                            : 'border-gray-300 hover:border-black'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <div>
                   <label className="block text-xs tracking-wider uppercase mb-3 font-semibold">
