@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NIGERIAN_STATES } from '../../constants/nigerianStates';
 import { Address } from '../../types/database';
+import { validateAddress, validateEmail } from '../../utils/validation';
 
 interface CheckoutShippingProps {
   data: {
@@ -35,13 +36,22 @@ export default function CheckoutShipping({ data, onUpdate, onNext, onBack }: Che
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!data.email) newErrors.email = 'Email is required';
-    if (!shippingForm.full_name) newErrors.full_name = 'Full name is required';
-    if (!shippingForm.phone) newErrors.phone = 'Phone number is required';
-    if (!shippingForm.address_line1) newErrors.address_line1 = 'Address is required';
-    if (!shippingForm.city) newErrors.city = 'City is required';
-    if (!shippingForm.state) newErrors.state = 'State is required';
-    if (!data.shippingMethod) newErrors.shippingMethod = 'Please select a shipping method';
+    if (data.guestCheckout && (!data.email || !validateEmail(data.email))) {
+      newErrors.email = data.email ? 'Please enter a valid email address' : 'Email is required';
+    }
+
+    const addressValidation = validateAddress({
+      ...shippingForm,
+      country: shippingForm.country || 'Nigeria',
+    });
+
+    if (!addressValidation.valid) {
+      Object.assign(newErrors, addressValidation.errors);
+    }
+
+    if (!data.shippingMethod) {
+      newErrors.shippingMethod = 'Please select a shipping method';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

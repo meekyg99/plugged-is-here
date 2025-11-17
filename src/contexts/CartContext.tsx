@@ -25,16 +25,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (savedCart) {
       try {
         const parsedCart = JSON.parse(savedCart);
-        setItems(parsedCart);
-        loadCartItemDetails(parsedCart);
+        if (Array.isArray(parsedCart) && parsedCart.length > 0) {
+          setItems(parsedCart);
+          loadCartItemDetails(parsedCart);
+        }
       } catch (error) {
         console.error('Error loading cart from localStorage:', error);
+        localStorage.removeItem('cart');
       }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
+    if (items.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(items));
+    } else {
+      localStorage.removeItem('cart');
+    }
   }, [items]);
 
   const loadCartItemDetails = async (cartItems: CartItem[]) => {
@@ -82,6 +89,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         if (variantError) throw variantError;
 
+        if (!variant || variant.stock_quantity < quantity) {
+          alert('This item is out of stock or insufficient quantity available.');
+          return;
+        }
+
         const { data: product, error: productError } = await supabase
           .from('products')
           .select('*')
@@ -101,6 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems([...items, newItem]);
       } catch (error) {
         console.error('Error adding item to cart:', error);
+        alert('Failed to add item to cart. Please try again.');
       }
     }
   };

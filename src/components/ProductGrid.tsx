@@ -40,31 +40,44 @@ export default function ProductGrid() {
       setLoading(true);
       setError(null);
       const data = await productService.getFeaturedProducts();
-      const displayProducts: ProductDisplay[] = data.map((product: ProductWithDetails) => {
-        const uniqueColors = product.variants.reduce((acc: { name: string; hex: string }[], variant) => {
-          if (variant.color && variant.color_hex && !acc.find(c => c.name === variant.color)) {
-            acc.push({ name: variant.color, hex: variant.color_hex });
-          }
-          return acc;
-        }, []);
 
-        const minPrice = Math.min(...product.variants.map(v => v.price));
-        const maxPrice = Math.max(...product.variants.map(v => v.price));
+      if (!data || data.length === 0) {
+        setProducts([]);
+        return;
+      }
 
-        return {
-          id: product.id,
-          name: product.name,
-          category: product.category?.name || 'Uncategorized',
-          price: minPrice === maxPrice
-            ? `₦${minPrice.toLocaleString()}`
-            : `₦${minPrice.toLocaleString()} - ₦${maxPrice.toLocaleString()}`,
-          rating: 4.5,
-          reviewCount: Math.floor(Math.random() * 50) + 10,
-          images: product.images.sort((a, b) => a.display_order - b.display_order).map(img => img.image_url),
-          colors: uniqueColors,
-          defaultVariantId: product.variants[0]?.id || '',
-        };
-      });
+      const displayProducts: ProductDisplay[] = data
+        .filter((product: ProductWithDetails) => {
+          return product.variants && product.variants.length > 0 && product.images && product.images.length > 0;
+        })
+        .map((product: ProductWithDetails) => {
+          const uniqueColors = product.variants.reduce((acc: { name: string; hex: string }[], variant) => {
+            if (variant.color && variant.color_hex && !acc.find(c => c.name === variant.color)) {
+              acc.push({ name: variant.color, hex: variant.color_hex });
+            }
+            return acc;
+          }, []);
+
+          const validPrices = product.variants.map(v => v.price).filter(p => p > 0);
+          const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+          const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 0;
+
+          const sortedImages = [...product.images].sort((a, b) => a.display_order - b.display_order);
+
+          return {
+            id: product.id,
+            name: product.name,
+            category: product.category?.name || 'Uncategorized',
+            price: minPrice === maxPrice
+              ? `₦${minPrice.toLocaleString()}`
+              : `₦${minPrice.toLocaleString()} - ₦${maxPrice.toLocaleString()}`,
+            rating: 4.5,
+            reviewCount: Math.floor(Math.random() * 50) + 10,
+            images: sortedImages.map(img => img.image_url),
+            colors: uniqueColors,
+            defaultVariantId: product.variants[0]?.id || '',
+          };
+        });
       setProducts(displayProducts);
     } catch (error) {
       console.error('Error loading products:', error);

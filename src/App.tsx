@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import DevTools from './components/DevTools';
+import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -51,18 +52,18 @@ function App() {
               <Route path="/products" element={<AppLayout><CategoryPage /></AppLayout>} />
               <Route path="/checkout" element={<AppLayout><CheckoutPage /></AppLayout>} />
               <Route path="/order-success" element={<AppLayout><OrderSuccessPage /></AppLayout>} />
-              <Route path="/account" element={<AppLayout><AccountPage /></AppLayout>} />
-              <Route path="/orders" element={<AppLayout><OrdersListPage /></AppLayout>} />
-              <Route path="/wishlist" element={<AppLayout><WishlistPage /></AppLayout>} />
+              <Route path="/account" element={<AppLayout><ProtectedRoute><AccountPage /></ProtectedRoute></AppLayout>} />
+              <Route path="/orders" element={<AppLayout><ProtectedRoute><OrdersListPage /></ProtectedRoute></AppLayout>} />
+              <Route path="/wishlist" element={<AppLayout><ProtectedRoute><WishlistPage /></ProtectedRoute></AppLayout>} />
 
               <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/orders" element={<OrdersPage />} />
-              <Route path="/admin/orders/:id" element={<OrderDetailPage />} />
-              <Route path="/admin/products" element={<ProductsPage />} />
-              <Route path="/admin/inventory" element={<InventoryPage />} />
-              <Route path="/admin/customers" element={<CustomersPage />} />
-              <Route path="/admin/reports" element={<ReportsPage />} />
+              <Route path="/admin/dashboard" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/orders" element={<ProtectedRoute requireAdmin><OrdersPage /></ProtectedRoute>} />
+              <Route path="/admin/orders/:id" element={<ProtectedRoute requireAdmin><OrderDetailPage /></ProtectedRoute>} />
+              <Route path="/admin/products" element={<ProtectedRoute requireAdmin><ProductsPage /></ProtectedRoute>} />
+              <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><InventoryPage /></ProtectedRoute>} />
+              <Route path="/admin/customers" element={<ProtectedRoute requireAdmin><CustomersPage /></ProtectedRoute>} />
+              <Route path="/admin/reports" element={<ProtectedRoute requireAdmin><ReportsPage /></ProtectedRoute>} />
             </Routes>
           </WishlistProvider>
         </CartProvider>
