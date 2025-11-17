@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { X, Heart, ShoppingBag, Share2, ZoomIn, Star } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
 
 interface QuickViewProps {
   isOpen: boolean;
   onClose: () => void;
   product: {
+    id: string;
     name: string;
     price: string;
     category: string;
@@ -12,14 +15,32 @@ interface QuickViewProps {
     reviewCount: number;
     images: string[];
     colors: { name: string; hex: string }[];
+    defaultVariantId: string;
   };
 }
 
 export default function QuickView({ isOpen, onClose, product }: QuickViewProps) {
   const [selectedColor, setSelectedColor] = useState<number>(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addItem } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   if (!isOpen) return null;
+
+  const handleAddToCart = () => {
+    if (product.defaultVariantId) {
+      addItem(product.defaultVariantId, product.id);
+      onClose();
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (isInWishlist(product.id)) {
+      await removeFromWishlist(product.id);
+    } else {
+      await addToWishlist(product.id);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -104,7 +125,6 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
               <p className="text-2xl font-light mb-8">{product.price}</p>
 
               <div className="space-y-6 mb-8">
-
                 <div>
                   <label className="block text-xs tracking-wider uppercase mb-3 font-semibold">
                     Color
@@ -141,7 +161,10 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
             </div>
 
             <div className="space-y-4">
-              <button className="w-full py-3 bg-black text-white flex items-center justify-center space-x-3 hover:bg-gray-800 transition-all group shadow-lg hover:shadow-2xl hover:scale-105">
+              <button
+                onClick={handleAddToCart}
+                className="w-full py-3 bg-black text-white flex items-center justify-center space-x-3 hover:bg-gray-800 transition-all group shadow-lg hover:shadow-2xl hover:scale-105"
+              >
                 <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span className="text-sm tracking-widest uppercase">
                   Add to Bag
@@ -149,10 +172,13 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
               </button>
 
               <div className="grid grid-cols-2 gap-3">
-                <button className="py-2 border border-black flex items-center justify-center space-x-2 hover:bg-black hover:text-white transition-colors group">
-                  <Heart className="w-4 h-4 group-hover:fill-current" />
+                <button
+                  onClick={handleToggleWishlist}
+                  className="py-2 border border-black flex items-center justify-center space-x-2 hover:bg-black hover:text-white transition-colors group"
+                >
+                  <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-current' : 'group-hover:fill-current'}`} />
                   <span className="text-xs tracking-wider uppercase">
-                    Wishlist
+                    {isInWishlist(product.id) ? 'In Wishlist' : 'Wishlist'}
                   </span>
                 </button>
                 <button className="py-2 border border-black flex items-center justify-center space-x-2 hover:bg-black hover:text-white transition-colors">

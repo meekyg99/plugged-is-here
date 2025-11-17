@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Eye, Heart, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import QuickView from './QuickView';
 import { ProductWithDetails } from '../types/database';
 import { productService } from '../services/productService';
 import { useCart } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
 
 interface ProductDisplay {
   id: string;
@@ -23,11 +25,11 @@ export default function ProductGrid() {
   const [error, setError] = useState<string | null>(null);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<ProductDisplay | null>(null);
-  const [wishlist, setWishlist] = useState<string[]>([]);
   const [visibleProducts, setVisibleProducts] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
   const productRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { addItem } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
     loadProducts();
@@ -102,12 +104,12 @@ export default function ProductGrid() {
     };
   }, [products]);
 
-  const toggleWishlist = (productId: string) => {
-    setWishlist(prev =>
-      prev.includes(productId)
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
+  const toggleWishlist = async (productId: string) => {
+    if (isInWishlist(productId)) {
+      await removeFromWishlist(productId);
+    } else {
+      await addToWishlist(productId);
+    }
   };
 
   return (
@@ -214,7 +216,7 @@ export default function ProductGrid() {
                   >
                     <Heart
                       className={`w-5 h-5 transition-all ${
-                        wishlist.includes(product.id)
+                        isInWishlist(product.id)
                           ? 'fill-black'
                           : 'fill-none'
                       }`}
@@ -289,9 +291,12 @@ export default function ProductGrid() {
 
         {products.length > 0 && (
           <div className="text-center mt-16">
-            <button className="px-12 py-3 bg-black text-white text-sm tracking-widest uppercase hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105">
+            <Link
+              to="/products"
+              className="inline-block px-12 py-3 bg-black text-white text-sm tracking-widest uppercase hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105"
+            >
               View All Products
-            </button>
+            </Link>
           </div>
         )}
       </div>

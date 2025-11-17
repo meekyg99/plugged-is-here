@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Hero() {
   const [scrollY, setScrollY] = useState(0);
@@ -85,9 +86,12 @@ export default function Hero() {
               <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
                 Men's Collection
               </h2>
-              <button className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl">
+              <Link
+                to="/category/all?gender=men"
+                className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
+              >
                 Explore
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -104,9 +108,12 @@ export default function Hero() {
               <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
                 Women's Collection
               </h2>
-              <button className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl">
+              <Link
+                to="/category/all?gender=men"
+                className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
+              >
                 Explore
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -123,9 +130,12 @@ export default function Hero() {
               <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
                 Accessories Collection
               </h2>
-              <button className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl">
+              <Link
+                to="/category/all?gender=men"
+                className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
+              >
                 Explore
-              </button>
+              </Link>
             </div>
           </div>
         </div>
