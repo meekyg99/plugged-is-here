@@ -217,3 +217,31 @@ A secure, role-based dashboard for managing all store operations.
 -   Gift cards and discount system.
 -   Advanced loyalty points.
 -   Multiple warehouse inventory routing.
+
+--------------------------------------------------------------------------
+
+## Implementation Alignment (Nov 17, 2025)
+
+To keep delivery synchronized across teams, we will start execution with the following phased plan:
+
+1. **Shared Domain Layer**
+    - Introduce TypeScript domain models, enums, and mocked services in `src/domain` for products, variants, orders, payments, users, inventory logs, and notifications.
+    - These contracts unblock parallel frontend/backend work and ensure naming consistency early.
+
+2. **Checkout & Cart Experience**
+    - Build the single-page checkout wizard (cart → address → shipping → payment) with validation, Paystack/Stripe placeholders, and Nigerian bank-transfer confirmation UI.
+    - Include order review/success states plus hooks for confirmation emails per the PRD.
+
+3. **Admin Shell & RBAC**
+    - Scaffold the admin dashboard with routed sections for Products, Orders, Inventory, Customers, Content/SEO, and Reports.
+    - Implement role guards (Super Admin/Manager/Support) and placeholder actions for stock adjustments, refunds, and workflow notes.
+
+4. **Engagement Features**
+    - Wire wishlist and "Notify Me" widgets on catalog/detail views, plus admin tooling for restock notifications.
+    - Extend Newsletter + notification pipelines so messaging ties back to customer preferences.
+
+5. **Testing & Tooling**
+    - Configure Vitest + React Testing Library for checkout calculations, cart state, and admin flows.
+    - Add component preview tooling (Storybook/Ladle) to accelerate QA for high-traffic UI such as checkout and dashboard tables.
+
+This alignment section should be updated as milestones close so product, design, and engineering share a single source of truth before implementation begins.
