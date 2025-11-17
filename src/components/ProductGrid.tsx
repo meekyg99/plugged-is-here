@@ -20,6 +20,7 @@ interface ProductDisplay {
 export default function ProductGrid() {
   const [products, setProducts] = useState<ProductDisplay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<ProductDisplay | null>(null);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -35,6 +36,7 @@ export default function ProductGrid() {
   const loadProducts = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await productService.getFeaturedProducts();
       const displayProducts: ProductDisplay[] = data.map((product: ProductWithDetails) => {
         const uniqueColors = product.variants.reduce((acc: { name: string; hex: string }[], variant) => {
@@ -64,6 +66,7 @@ export default function ProductGrid() {
       setProducts(displayProducts);
     } catch (error) {
       console.error('Error loading products:', error);
+      setError('Failed to load products. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -125,10 +128,25 @@ export default function ProductGrid() {
               Loading products...
             </p>
           </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-red-600 text-lg tracking-wider mb-4">
+              {error}
+            </p>
+            <button
+              onClick={loadProducts}
+              className="px-8 py-3 bg-black text-white text-sm tracking-widest uppercase hover:bg-gray-800 transition-all duration-300"
+            >
+              Try Again
+            </button>
+          </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-500 text-lg tracking-wider">
+            <p className="text-gray-500 text-lg tracking-wider mb-4">
               No products available yet
+            </p>
+            <p className="text-sm text-gray-400 tracking-wide">
+              Use the "Seed DB" button to add sample products
             </p>
           </div>
         ) : (
