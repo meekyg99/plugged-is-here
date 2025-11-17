@@ -57,9 +57,9 @@ export const validateAddress = (address: {
 
   if (!validateRequiredField(address.phone)) {
     errors.phone = 'Phone number is required';
-  } else if (address.country === 'Nigeria' && !validateNigerianPhone(address.phone)) {
+  } else if (address.phone && address.country === 'Nigeria' && !validateNigerianPhone(address.phone)) {
     errors.phone = 'Please enter a valid Nigerian phone number';
-  } else if (!validatePhone(address.phone)) {
+  } else if (address.phone && !validatePhone(address.phone)) {
     errors.phone = 'Please enter a valid phone number';
   }
 
@@ -73,7 +73,7 @@ export const validateAddress = (address: {
 
   if (!validateRequiredField(address.state)) {
     errors.state = 'State is required';
-  } else if (address.country === 'Nigeria' && !validateNigerianState(address.state)) {
+  } else if (address.state && address.country === 'Nigeria' && !validateNigerianState(address.state)) {
     errors.state = 'Please select a valid Nigerian state';
   }
 
@@ -101,7 +101,7 @@ export const validateCheckoutData = (data: {
 
   if (!validateRequiredField(data.email)) {
     errors.email = 'Email is required';
-  } else if (!validateEmail(data.email)) {
+  } else if (data.email && !validateEmail(data.email)) {
     errors.email = 'Please enter a valid email address';
   }
 
