@@ -34,6 +34,26 @@ export default function ProductsPage() {
     }
   };
 
+  const handleDelete = async (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      setProducts(products.filter(p => p.id !== productId));
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product. Please try again.');
+    }
+  };
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -140,7 +160,10 @@ export default function ProductsPage() {
                           >
                             <Edit className="w-4 h-4" />
                           </a>
-                          <button className="p-1 text-red-600 hover:text-red-800">
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="p-1 text-red-600 hover:text-red-800"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>

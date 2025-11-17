@@ -1,13 +1,20 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { AlertTriangle, Package, Search } from 'lucide-react';
+import { AlertTriangle, Package, Search, Edit2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function InventoryPage() {
+  const { user } = useAuth();
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'low_stock'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
+  const [adjustmentData, setAdjustmentData] = useState({
+    quantity: 0,
+    reason: '',
+  });
 
   useEffect(() => {
     fetchInventory();
@@ -50,6 +57,49 @@ export default function InventoryPage() {
   const lowStockCount = variants.filter(
     (v) => v.stock_quantity <= v.low_stock_threshold
   ).length;
+
+  const handleAdjustStock = async (variantId: string) => {
+    if (!user || adjustmentData.quantity === 0) return;
+
+    try {
+      const variant = variants.find(v => v.id === variantId);
+      if (!variant) return;
+
+      const newQuantity = variant.stock_quantity + adjustmentData.quantity;
+
+      if (newQuantity < 0) {
+        alert('Adjustment would result in negative stock');
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('product_variants')
+        .update({ stock_quantity: newQuantity })
+        .eq('id', variantId);
+
+      if (updateError) throw updateError;
+
+      const { error: logError } = await supabase
+        .from('inventory_logs')
+        .insert({
+          variant_id: variantId,
+          change_type: 'adjustment',
+          quantity_change: adjustmentData.quantity,
+          quantity_after: newQuantity,
+          reason: adjustmentData.reason || 'Manual adjustment',
+          admin_id: user.id,
+        });
+
+      if (logError) throw logError;
+
+      setEditingVariantId(null);
+      setAdjustmentData({ quantity: 0, reason: '' });
+      await fetchInventory();
+    } catch (error) {
+      console.error('Error adjusting stock:', error);
+      alert('Failed to adjust stock');
+    }
+  };
 
   return (
     <AdminLayout activePage="inventory">
@@ -138,12 +188,16 @@ export default function InventoryPage() {
                     <th className="px-6 py-3 text-left text-xs tracking-wider uppercase text-gray-700">
                       Status
                     </th>
+                    <th className="px-6 py-3 text-left text-xs tracking-wider uppercase text-gray-700">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredVariants.map((variant) => {
                     const isLowStock = variant.stock_quantity <= variant.low_stock_threshold;
                     const isOutOfStock = variant.stock_quantity === 0;
+                    const isEditing = editingVariantId === variant.id;
 
                     return (
                       <tr key={variant.id} className="hover:bg-gray-50">
@@ -158,7 +212,17 @@ export default function InventoryPage() {
                           {variant.size}
                         </td>
                         <td className="px-6 py-4 text-sm font-medium">
-                          {variant.stock_quantity}
+                          {isEditing ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">{variant.stock_quantity}</span>
+                              <span>→</span>
+                              <span className="font-semibold">
+                                {variant.stock_quantity + adjustmentData.quantity}
+                              </span>
+                            </div>
+                          ) : (
+                            variant.stock_quantity
+                          )}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
                           {variant.low_stock_threshold}
@@ -177,6 +241,56 @@ export default function InventoryPage() {
                             <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
                               In Stock
                             </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {isEditing ? (
+                            <div className="space-y-2 min-w-[200px]">
+                              <input
+                                type="number"
+                                value={adjustmentData.quantity}
+                                onChange={(e) => setAdjustmentData({
+                                  ...adjustmentData,
+                                  quantity: parseInt(e.target.value) || 0
+                                })}
+                                placeholder="Adjustment (+/-)"
+                                className="w-full px-2 py-1 text-sm border border-gray-300 focus:outline-none focus:border-black"
+                              />
+                              <input
+                                type="text"
+                                value={adjustmentData.reason}
+                                onChange={(e) => setAdjustmentData({
+                                  ...adjustmentData,
+                                  reason: e.target.value
+                                })}
+                                placeholder="Reason"
+                                className="w-full px-2 py-1 text-sm border border-gray-300 focus:outline-none focus:border-black"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleAdjustStock(variant.id)}
+                                  className="px-3 py-1 bg-black text-white text-xs uppercase hover:bg-gray-800"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingVariantId(null);
+                                    setAdjustmentData({ quantity: 0, reason: '' });
+                                  }}
+                                  className="px-3 py-1 border border-gray-300 text-xs uppercase hover:bg-gray-50"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setEditingVariantId(variant.id)}
+                              className="p-1 text-blue-600 hover:text-blue-800"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
                           )}
                         </td>
                       </tr>

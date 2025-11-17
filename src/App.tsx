@@ -19,6 +19,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import OrdersPage from './pages/admin/OrdersPage';
 import OrderDetailPage from './pages/admin/OrderDetailPage';
 import ProductsPage from './pages/admin/ProductsPage';
+import ProductEditPage from './pages/admin/ProductEditPage';
 import InventoryPage from './pages/admin/InventoryPage';
 import CustomersPage from './pages/admin/CustomersPage';
 import ReportsPage from './pages/admin/ReportsPage';
@@ -61,6 +62,8 @@ function App() {
               <Route path="/admin/orders" element={<ProtectedRoute requireAdmin><OrdersPage /></ProtectedRoute>} />
               <Route path="/admin/orders/:id" element={<ProtectedRoute requireAdmin><OrderDetailPage /></ProtectedRoute>} />
               <Route path="/admin/products" element={<ProtectedRoute requireAdmin><ProductsPage /></ProtectedRoute>} />
+              <Route path="/admin/products/new" element={<ProtectedRoute requireAdmin><ProductEditPage /></ProtectedRoute>} />
+              <Route path="/admin/products/:id" element={<ProtectedRoute requireAdmin><ProductEditPage /></ProtectedRoute>} />
               <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><InventoryPage /></ProtectedRoute>} />
               <Route path="/admin/customers" element={<ProtectedRoute requireAdmin><CustomersPage /></ProtectedRoute>} />
               <Route path="/admin/reports" element={<ProtectedRoute requireAdmin><ReportsPage /></ProtectedRoute>} />
