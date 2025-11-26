@@ -23,6 +23,7 @@ import ProductEditPage from './pages/admin/ProductEditPage';
 import InventoryPage from './pages/admin/InventoryPage';
 import CustomersPage from './pages/admin/CustomersPage';
 import ReportsPage from './pages/admin/ReportsPage';
+import ContentPage from './pages/admin/ContentPage';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -66,6 +67,7 @@ function App() {
               <Route path="/admin/products/:id" element={<ProtectedRoute requireAdmin><ProductEditPage /></ProtectedRoute>} />
               <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><InventoryPage /></ProtectedRoute>} />
               <Route path="/admin/customers" element={<ProtectedRoute requireAdmin><CustomersPage /></ProtectedRoute>} />
+              <Route path="/admin/content" element={<ProtectedRoute requireAdmin><ContentPage /></ProtectedRoute>} />
               <Route path="/admin/reports" element={<ProtectedRoute requireAdmin><ReportsPage /></ProtectedRoute>} />
             </Routes>
           </WishlistProvider>

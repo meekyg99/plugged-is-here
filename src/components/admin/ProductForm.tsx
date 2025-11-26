@@ -372,7 +372,10 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
 
       <div className="bg-white shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-light uppercase tracking-wider">Variants *</h2>
+          <div>
+            <h2 className="text-xl font-light uppercase tracking-wider">Variants *</h2>
+            <p className="text-xs text-gray-500 mt-1">Add different sizes and colors for this product</p>
+          </div>
           <button
             type="button"
             onClick={addVariant}
@@ -385,95 +388,123 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
 
         {errors.variants && <p className="text-red-600 text-sm mb-4">{errors.variants}</p>}
 
-        <div className="space-y-4">
-          {formData.variants.map((variant, index) => (
-            <div key={index} className="border border-gray-200 p-4 relative">
-              <button
-                type="button"
-                onClick={() => removeVariant(index)}
-                className="absolute top-2 right-2 text-red-600 hover:text-red-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs uppercase text-gray-600 mb-1">SKU *</label>
-                  <input
-                    type="text"
-                    value={variant.sku}
-                    onChange={(e) => updateVariant(index, 'sku', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                  />
-                  {errors[`variant_${index}_sku`] && (
-                    <p className="text-red-600 text-xs mt-1">{errors[`variant_${index}_sku`]}</p>
+        {formData.variants.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded">
+            <Package className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+            <p className="text-gray-500 text-sm">No variants yet. Add your first variant to get started.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {formData.variants.map((variant, index) => (
+              <div key={index} className="border border-gray-200 p-4 relative hover:border-gray-400 transition-colors">
+                <div className="flex items-center gap-3 mb-4">
+                  {variant.color_hex && (
+                    <div
+                      className="w-8 h-8 rounded-full border-2 border-gray-300"
+                      style={{ backgroundColor: variant.color_hex }}
+                      title={variant.color || 'Color'}
+                    />
                   )}
+                  <div className="flex-1">
+                    <span className="text-sm font-medium">{variant.color || 'No Color'}</span>
+                    {variant.size && <span className="text-xs text-gray-500 ml-2">• Size: {variant.size}</span>}
+                    {variant.sku && <span className="text-xs text-gray-400 ml-2">• SKU: {variant.sku}</span>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeVariant(index)}
+                    className="text-red-600 hover:text-red-800 p-1"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs uppercase text-gray-600 mb-1">Size</label>
-                  <input
-                    type="text"
-                    value={variant.size}
-                    onChange={(e) => updateVariant(index, 'size', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs uppercase text-gray-600 mb-1">Color</label>
-                  <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">SKU *</label>
                     <input
                       type="text"
-                      value={variant.color}
-                      onChange={(e) => updateVariant(index, 'color', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                      value={variant.sku}
+                      onChange={(e) => updateVariant(index, 'sku', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                      placeholder="PROD-001"
                     />
+                    {errors[`variant_${index}_sku`] && (
+                      <p className="text-red-600 text-xs mt-1">{errors[`variant_${index}_sku`]}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Size</label>
                     <input
-                      type="color"
-                      value={variant.color_hex}
-                      onChange={(e) => updateVariant(index, 'color_hex', e.target.value)}
-                      className="w-12 h-10 border border-gray-300"
+                      type="text"
+                      value={variant.size}
+                      onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                      placeholder="M, L, XL"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Color Name</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={variant.color}
+                        onChange={(e) => updateVariant(index, 'color', e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                        placeholder="Royal Blue"
+                      />
+                      <input
+                        type="color"
+                        value={variant.color_hex}
+                        onChange={(e) => updateVariant(index, 'color_hex', e.target.value)}
+                        className="w-12 h-10 border border-gray-300 cursor-pointer"
+                        title="Pick color"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Price (₦) *</label>
+                    <input
+                      type="number"
+                      value={variant.price}
+                      onChange={(e) => updateVariant(index, 'price', parseFloat(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                      placeholder="25000"
+                    />
+                    {errors[`variant_${index}_price`] && (
+                      <p className="text-red-600 text-xs mt-1">{errors[`variant_${index}_price`]}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Compare Price (₦)</label>
+                    <input
+                      type="number"
+                      value={variant.compare_at_price || ''}
+                      onChange={(e) => updateVariant(index, 'compare_at_price', parseFloat(e.target.value) || undefined)}
+                      className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                      placeholder="30000"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Stock Quantity *</label>
+                    <input
+                      type="number"
+                      value={variant.stock_quantity}
+                      onChange={(e) => updateVariant(index, 'stock_quantity', parseInt(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                      placeholder="10"
                     />
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-xs uppercase text-gray-600 mb-1">Price (₦) *</label>
-                  <input
-                    type="number"
-                    value={variant.price}
-                    onChange={(e) => updateVariant(index, 'price', parseFloat(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                  />
-                  {errors[`variant_${index}_price`] && (
-                    <p className="text-red-600 text-xs mt-1">{errors[`variant_${index}_price`]}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs uppercase text-gray-600 mb-1">Compare Price (₦)</label>
-                  <input
-                    type="number"
-                    value={variant.compare_at_price || ''}
-                    onChange={(e) => updateVariant(index, 'compare_at_price', parseFloat(e.target.value) || undefined)}
-                    className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs uppercase text-gray-600 mb-1">Stock Quantity</label>
-                  <input
-                    type="number"
-                    value={variant.stock_quantity}
-                    onChange={(e) => updateVariant(index, 'stock_quantity', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                  />
-                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-white shadow-sm p-6">

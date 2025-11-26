@@ -600,3 +600,58 @@ To keep delivery synchronized across teams, we will start execution with the fol
     - Add component preview tooling (Storybook/Ladle) to accelerate QA for high-traffic UI such as checkout and dashboard tables.
 
 This alignment section should be updated as milestones close so product, design, and engineering share a single source of truth before implementation begins.
+
+--------------------------------------------------------------------------
+
+## v1.3.0 --- Color Variant Selection & Hero Content Management (Nov 26, 2025)
+
+### Added
+
+#### Color Variant Selection Feature
+-   Interactive color selection on product cards and detail pages
+-   Functional color swatches that filter available sizes and update pricing
+-   Color-based stock availability indicators (in stock, low stock, out of stock)
+-   Dynamic variant selection with real-time price and inventory updates
+-   Color variant preview in shopping cart and checkout
+-   Color preference analytics and reporting in admin dashboard
+-   Enhanced admin product management with color grouping and bulk operations
+-   Color-based image switching for better product visualization
+-   URL parameter support for deep linking to specific color variants
+-   Accessibility improvements with color name tooltips and labels
+
+#### Hero Section & Content Management
+-   Dynamic hero section powered by database content
+-   Admin content management interface for homepage hero customization
+-   Editable hero headline, subtitle, and call-to-action button
+-   Background gradient color picker or image upload for hero section
+-   Three category banner management (Men's, Women's, Accessories)
+-   Banner image upload with URL input and preview
+-   Category banner title, subtitle, and link customization
+-   Display order management with drag and drop functionality
+-   Active/inactive toggle for content blocks
+-   Content scheduling with start and end dates
+-   Banner type classification (main hero, category banners, promotional)
+-   Live preview capability before publishing changes
+-   Content revision history and rollback functionality
+-   Audit logging for all content modifications
+
+### Updated
+-   Extended banners table to support hero section and category banners
+-   ProductForm component now groups variants by color for easier management
+-   ProductGrid component with clickable, functional color swatches
+-   QuickView modal with fully functional color and size selection
+-   Cart drawer displays color swatches and size information
+-   Admin dashboard navigation includes accessible Content management
+-   Hero component refactored to load dynamic content from database
+-   Database queries optimized for color-based variant filtering
+
+### Technical Notes
+-   Domain name configured: pluggedby212.shop
+-   No breaking database schema changes required
+-   Leverages existing color and color_hex fields in product_variants table
+-   Extends banners table usage without structural modifications
+-   Maintains minimalist black/white/gray admin design aesthetic
+-   Mobile-responsive color selection and content management interfaces
+-   Performance optimized with proper indexing and query caching
+
+--------------------------------------------------------------------------
