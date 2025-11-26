@@ -113,7 +113,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                 <img
                   src="/WhatsApp Image 2025-10-28 at 11.51.32_0752b31a copy.jpg"
                   alt="Plugged by 212"
-                  className="h-12 w-auto object-contain"
+                  className="h-12 w-auto object-contain mix-blend-darken"
                 />
               </Link>
             </div>
