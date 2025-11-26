@@ -1,4 +1,4 @@
-import { Search, Briefcase, Menu, X, Heart, ChevronDown, User, LogOut } from 'lucide-react';
+import { Search, Briefcase, Menu, X, Heart, ChevronDown, User, LogOut, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,7 +24,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isAdmin } = useAuth();
   const { itemCount, toggleCart } = useCart();
 
   const handleAuthClick = (mode: 'signin' | 'signup') => {
@@ -143,19 +143,31 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
 
               {user ? (
                 <div className="relative">
-                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="p-2 hover:bg-gray-50 rounded-2xl transition-all duration-300">
+                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="p-2 hover:bg-gray-50 rounded-2xl transition-all duration-300 relative">
                     <User className="w-5 h-5" />
+                    {isAdmin && (
+                      <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-black rounded-full border border-white"></span>
+                    )}
                   </button>
                   {userMenuOpen && (
                     <div className="absolute right-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2">
                       <div className="px-6 py-3 border-b border-gray-200">
                         <p className="text-xs uppercase tracking-wider text-gray-500">Signed in as</p>
                         <p className="text-sm font-medium">{profile?.full_name || user.email}</p>
+                        {isAdmin && (
+                          <span className="inline-flex items-center space-x-1 mt-1 px-2 py-0.5 bg-black text-white text-[10px] uppercase tracking-wider rounded">
+                            <Shield className="w-2.5 h-2.5" />
+                            <span>Admin</span>
+                          </span>
+                        )}
                       </div>
                       <Link to="/account" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">My Account</Link>
                       <Link to="/orders" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Orders</Link>
-                      {profile?.role !== 'customer' && (
-                        <Link to="/admin" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200">Admin Dashboard</Link>
+                      {isAdmin && (
+                        <Link to="/admin" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200 bg-gray-50 font-semibold flex items-center space-x-2">
+                          <Shield className="w-4 h-4" />
+                          <span>Admin Dashboard</span>
+                        </Link>
                       )}
                       <button onClick={handleSignOut} className="w-full text-left px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200 flex items-center space-x-2">
                         <LogOut className="w-4 h-4" />
@@ -222,6 +234,12 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
           {user ? (
             <>
               <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity">My Account</Link>
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-2 border-t border-gray-200 pt-6">
+                  <Shield className="w-5 h-5" />
+                  <span>Admin Dashboard</span>
+                </Link>
+              )}
               <button onClick={() => { handleSignOut(); setMobileMenuOpen(false); }} className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity text-left">Sign Out</button>
             </>
           ) : (
