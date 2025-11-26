@@ -111,7 +111,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
             <div className="absolute left-1/2 transform -translate-x-1/2">
               <Link to="/" className="block">
                 <img
-                  src="/WhatsApp Image 2025-10-28 at 11.51.32_0752b31a.jpg"
+                  src="/WhatsApp Image 2025-10-28 at 11.51.32_0752b31a copy.jpg"
                   alt="Plugged by 212"
                   className="h-12 w-auto object-contain"
                 />
