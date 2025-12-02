@@ -13,6 +13,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import Logo from '../Logo';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -45,7 +46,7 @@ export default function AdminLayout({ children, activePage }: AdminLayoutProps) 
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <h1 className="text-lg font-medium tracking-wider">ADMIN PANEL</h1>
+          <Logo />
           <div className="w-10" />
         </div>
       </div>
@@ -62,9 +63,9 @@ export default function AdminLayout({ children, activePage }: AdminLayoutProps) 
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-medium tracking-wider">ADMIN PANEL</h1>
-          <p className="text-xs text-gray-500 mt-1">Fashion Store Management</p>
+        <div className="p-6 border-b border-gray-200 space-y-1">
+          <Logo />
+          <p className="text-xs text-gray-500">Fashion Store Management</p>
         </div>
 
         <nav className="p-4 space-y-1">

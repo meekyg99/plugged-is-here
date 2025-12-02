@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { DollarSign, ShoppingCart, Package, Users, TrendingUp, AlertTriangle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import Logo from '../../components/Logo';
 
 interface DashboardStats {
   totalRevenue: number;
@@ -23,9 +24,13 @@ export default function AdminDashboard() {
   });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingRestock, setPendingRestock] = useState(0);
+  const [restockPreview, setRestockPreview] = useState<any[]>([]);
+  const [restockLoading, setRestockLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchRestockNotifications();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -72,6 +77,27 @@ export default function AdminDashboard() {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRestockNotifications = async () => {
+    setRestockLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('restock_notifications')
+        .select('id, email, variant_id, notified, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      const preview = data || [];
+      setRestockPreview(preview);
+      const pending = preview.filter((item) => item.notified === false).length;
+      setPendingRestock(pending);
+    } catch (error) {
+      console.error('Error fetching restock notifications:', error);
+    } finally {
+      setRestockLoading(false);
     }
   };
 
@@ -137,10 +163,13 @@ export default function AdminDashboard() {
   return (
     <AdminLayout activePage="dashboard">
       <div className="p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl tracking-wider uppercase font-light">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome back! Here's an overview of your store.</p>
-        </div>
+            <div className="mb-8 space-y-2">
+              <div className="flex items-center gap-3">
+                <Logo />
+                <span className="text-xs tracking-wider text-gray-500 uppercase">Admin Dashboard</span>
+              </div>
+              <p className="text-gray-600 mt-2">Welcome back! Here's an overview of your store.</p>
+            </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {statCards.map((card) => {
@@ -239,7 +268,45 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+
+        <div className="bg-white p-6 shadow-sm mt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-wider text-gray-500">Notification Center</p>
+              <p className="text-2xl font-light">{pendingRestock} pending restock alerts</p>
+            </div>
+            <button
+              onClick={fetchRestockNotifications}
+              className="px-4 py-2 border border-black uppercase text-xs tracking-wider hover:bg-black hover:text-white transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
+          <div>
+            {restockLoading ? (
+              <div className="text-center text-sm text-gray-500">Loading notification queue...</div>
+            ) : restockPreview.length === 0 ? (
+              <p className="text-sm text-gray-500">No restock subscriptions yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {restockPreview.map((notification) => (
+                  <li key={notification.id} className="flex items-center justify-between text-sm border border-gray-100 px-3 py-2 rounded">
+                    <span className="font-medium">
+                      {notification.email} · {notification.variant_id}
+                    </span>
+                    <span className="text-[10px] tracking-wider uppercase text-gray-500">
+                      {notification.notified ? 'Sent' : 'Pending'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <p className="text-xs text-gray-500">
+            Notification delivery will be wired up next so you can trigger emails for restock and order updates directly from this view.
+          </p>
+        </div>
     </AdminLayout>
   );
 }
