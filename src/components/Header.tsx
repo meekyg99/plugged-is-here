@@ -25,7 +25,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isAdmin } = useAuth();
   const { itemCount, toggleCart } = useCart();
 
   const handleAuthClick = (mode: 'signin' | 'signup') => {
@@ -149,8 +149,8 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                       </div>
                       <Link to="/account" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">My Account</Link>
                       <Link to="/orders" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Orders</Link>
-                      {profile?.role !== 'customer' && (
-                        <Link to="/admin" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200">Admin Dashboard</Link>
+                      {isAdmin && (
+                        <Link to="/admin/dashboard" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200">Admin Dashboard</Link>
                       )}
                       <button onClick={handleSignOut} className="w-full text-left px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200 flex items-center space-x-2">
                         <LogOut className="w-4 h-4" />

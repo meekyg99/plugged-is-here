@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import DevTools from './components/DevTools';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -15,6 +16,7 @@ import OrderSuccessPage from './pages/OrderSuccessPage';
 import AccountPage from './pages/AccountPage';
 import OrdersListPage from './pages/OrdersListPage';
 import WishlistPage from './pages/WishlistPage';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import OrdersPage from './pages/admin/OrdersPage';
 import OrderDetailPage from './pages/admin/OrderDetailPage';
@@ -37,14 +39,20 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       {children}
       <Footer />
       <CartDrawer />
-      <DevTools />
+      {/* DevTools removed - database already seeded */}
+      {/* <DevTools /> */}
     </div>
   );
 }
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
@@ -58,17 +66,18 @@ function App() {
               <Route path="/orders" element={<AppLayout><ProtectedRoute><OrdersListPage /></ProtectedRoute></AppLayout>} />
               <Route path="/wishlist" element={<AppLayout><ProtectedRoute><WishlistPage /></ProtectedRoute></AppLayout>} />
 
+              <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/admin/dashboard" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/orders" element={<ProtectedRoute requireAdmin><OrdersPage /></ProtectedRoute>} />
-              <Route path="/admin/orders/:id" element={<ProtectedRoute requireAdmin><OrderDetailPage /></ProtectedRoute>} />
-              <Route path="/admin/products" element={<ProtectedRoute requireAdmin><ProductsPage /></ProtectedRoute>} />
-              <Route path="/admin/products/new" element={<ProtectedRoute requireAdmin><ProductEditPage /></ProtectedRoute>} />
-              <Route path="/admin/products/:id" element={<ProtectedRoute requireAdmin><ProductEditPage /></ProtectedRoute>} />
-              <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><InventoryPage /></ProtectedRoute>} />
-              <Route path="/admin/customers" element={<ProtectedRoute requireAdmin><CustomersPage /></ProtectedRoute>} />
-              <Route path="/admin/content" element={<ProtectedRoute requireAdmin><ContentPage /></ProtectedRoute>} />
-              <Route path="/admin/reports" element={<ProtectedRoute requireAdmin><ReportsPage /></ProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+              <Route path="/admin/orders" element={<AdminProtectedRoute><OrdersPage /></AdminProtectedRoute>} />
+              <Route path="/admin/orders/:id" element={<AdminProtectedRoute><OrderDetailPage /></AdminProtectedRoute>} />
+              <Route path="/admin/products" element={<AdminProtectedRoute><ProductsPage /></AdminProtectedRoute>} />
+              <Route path="/admin/products/new" element={<AdminProtectedRoute><ProductEditPage /></AdminProtectedRoute>} />
+              <Route path="/admin/products/:id" element={<AdminProtectedRoute><ProductEditPage /></AdminProtectedRoute>} />
+              <Route path="/admin/inventory" element={<AdminProtectedRoute><InventoryPage /></AdminProtectedRoute>} />
+              <Route path="/admin/customers" element={<AdminProtectedRoute><CustomersPage /></AdminProtectedRoute>} />
+              <Route path="/admin/content" element={<AdminProtectedRoute><ContentPage /></AdminProtectedRoute>} />
+              <Route path="/admin/reports" element={<AdminProtectedRoute><ReportsPage /></AdminProtectedRoute>} />
             </Routes>
           </WishlistProvider>
         </CartProvider>

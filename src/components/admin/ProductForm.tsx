@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, Upload } from 'lucide-react';
+import { Plus, X, Upload, Package } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface Category {

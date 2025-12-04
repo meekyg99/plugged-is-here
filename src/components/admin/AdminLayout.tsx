@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Package,
@@ -11,9 +11,10 @@ import {
   X,
   LogOut,
   ChevronDown,
+  Clock,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import Logo from '../Logo';
+import { useAdminSession } from '../../hooks/useAdminSession';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -21,9 +22,34 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children, activePage }: AdminLayoutProps) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { logoutAdmin } = useAdminSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [sessionExpiry, setSessionExpiry] = useState<string>('');
+
+  // Update session expiry display
+  useEffect(() => {
+    const updateExpiry = () => {
+      const expiresStr = localStorage.getItem('admin_session_expires');
+      if (expiresStr) {
+        const expires = parseInt(expiresStr);
+        const remaining = expires - Date.now();
+        const minutes = Math.floor(remaining / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        
+        if (remaining > 0) {
+          setSessionExpiry(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        } else {
+          setSessionExpiry('Expired');
+        }
+      }
+    };
+
+    updateExpiry();
+    const interval = setInterval(updateExpiry, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, id: 'dashboard' },
@@ -46,7 +72,7 @@ export default function AdminLayout({ children, activePage }: AdminLayoutProps) 
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <Logo />
+          <div className="text-xl font-bold tracking-wider uppercase">Admin</div>
           <div className="w-10" />
         </div>
       </div>
@@ -64,7 +90,7 @@ export default function AdminLayout({ children, activePage }: AdminLayoutProps) 
         } lg:translate-x-0`}
       >
         <div className="p-6 border-b border-gray-200 space-y-1">
-          <Logo />
+          <div className="text-xl font-bold tracking-wider uppercase">Admin Portal</div>
           <p className="text-xs text-gray-500">Fashion Store Management</p>
         </div>
 
@@ -112,8 +138,14 @@ export default function AdminLayout({ children, activePage }: AdminLayoutProps) 
 
             {userMenuOpen && (
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Clock className="w-3 h-3" />
+                    <span>Session expires in: {sessionExpiry}</span>
+                  </div>
+                </div>
                 <button
-                  onClick={() => signOut()}
+                  onClick={logoutAdmin}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition-colors text-left"
                 >
                   <LogOut className="w-4 h-4" />
