@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types/database';
+import { sendWelcomeEmail } from '../services/emailService';
 
 interface AuthContextType {
   user: User | null;
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -82,7 +83,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         },
       });
-      return { error: error || null };
+      
+      if (error) {
+        return { error };
+      }
+
+      // Send welcome email (non-blocking - don't fail signup if email fails)
+      if (data.user) {
+        sendWelcomeEmail(email, fullName, window.location.origin)
+          .catch(err => console.error('Failed to send welcome email:', err));
+      }
+      
+      return { error: null };
     } catch (error) {
       return { error: error as Error };
     }

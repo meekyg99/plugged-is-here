@@ -3,6 +3,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import { ArrowLeft, Package, Truck, CheckCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { OrderWithDetails, OrderStatus } from '../../types/database';
+import { sendOrderStatusEmail } from '../../services/emailService';
 
 export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderWithDetails | null>(null);
@@ -47,7 +48,7 @@ export default function OrderDetailPage() {
   };
 
   const updateOrderStatus = async () => {
-    if (!orderId) return;
+    if (!orderId || !order) return;
 
     setUpdating(true);
     try {
@@ -57,6 +58,20 @@ export default function OrderDetailPage() {
         .eq('id', orderId);
 
       if (error) throw error;
+      
+      // Send status update email for key statuses (non-blocking)
+      if (['processing', 'shipped', 'delivered'].includes(selectedStatus)) {
+        const shippingAddr = order.shipping_address as any;
+        sendOrderStatusEmail(order.email, {
+          orderNumber: order.order_number,
+          status: selectedStatus as 'processing' | 'shipped' | 'delivered',
+          customerName: shippingAddr?.full_name || 'Customer',
+          trackingNumber: order.tracking_number || undefined,
+          trackingUrl: order.tracking_url || undefined,
+          estimatedDelivery: undefined, // Could calculate based on shipping method
+        }).catch(err => console.error('Failed to send status email:', err));
+      }
+      
       await fetchOrderDetails();
       alert('Order status updated successfully');
     } catch (error) {

@@ -3,6 +3,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from '../../hooks/useNavigate';
 import { supabase } from '../../lib/supabase';
+import { sendOrderConfirmationEmail } from '../../services/emailService';
 
 interface CheckoutReviewProps {
   data: {
@@ -87,6 +88,37 @@ export default function CheckoutReview({ data, onBack }: CheckoutReviewProps) {
         });
 
       if (paymentError) throw paymentError;
+
+      // Send order confirmation email (non-blocking)
+      sendOrderConfirmationEmail(data.email, {
+        orderNumber: orderNumber,
+        orderDate: new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        customerName: data.shippingAddress.full_name,
+        items: items.map(item => ({
+          name: item.product?.name || 'Product',
+          quantity: item.quantity,
+          price: item.variant?.price || 0,
+          imageUrl: item.product?.images?.[0] || undefined,
+        })),
+        subtotal: total,
+        shipping: shippingCost,
+        tax: 0,
+        total: orderTotal,
+        shippingAddress: {
+          street: data.shippingAddress.address_line1,
+          city: data.shippingAddress.city,
+          state: data.shippingAddress.state,
+          zip: data.shippingAddress.postal_code || '',
+          country: data.shippingAddress.country,
+        },
+        estimatedDelivery: data.shippingMethod === 'express' 
+          ? '2-3 business days' 
+          : '5-7 business days',
+      }).catch(err => console.error('Failed to send order confirmation email:', err));
 
       clearCart();
       navigate(`/order-success/${order.id}`);
