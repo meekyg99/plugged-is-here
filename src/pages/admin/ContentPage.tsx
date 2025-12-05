@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { Save, Image as ImageIcon, Eye, Plus } from 'lucide-react';
+import { Save, Image as ImageIcon, Eye, Plus, Upload, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface Banner {
@@ -24,9 +24,12 @@ interface Banner {
 export default function ContentPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [heroMain, setHeroMain] = useState<Banner | null>(null);
   const [categoryBanners, setCategoryBanners] = useState<Banner[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const heroImageRef = useRef<HTMLInputElement>(null);
+  const categoryImageRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   useEffect(() => {
     fetchContent();
@@ -128,6 +131,77 @@ export default function ContentPage() {
     const updated = [...categoryBanners];
     updated[index] = { ...updated[index], [field]: value };
     setCategoryBanners(updated);
+  };
+
+  const uploadImage = async (file: File, folder: string = 'hero'): Promise<string | null> => {
+    try {
+      setUploading(true);
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setMessage({ type: 'error', text: 'Please upload an image file' });
+        return null;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Image size should be less than 5MB' });
+        return null;
+      }
+
+      // Create unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('banners')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('banners')
+        .getPublicUrl(data.path);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setMessage({ type: 'error', text: 'Failed to upload image' });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !heroMain) return;
+
+    const imageUrl = await uploadImage(file, 'hero-main');
+    if (imageUrl) {
+      setHeroMain({ ...heroMain, image_url: imageUrl });
+      setMessage({ type: 'success', text: 'Image uploaded successfully!' });
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  const handleCategoryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const banner = categoryBanners[index];
+    const imageUrl = await uploadImage(file, `category-${banner.position}`);
+    
+    if (imageUrl) {
+      updateCategoryBanner(index, 'image_url', imageUrl);
+      setMessage({ type: 'success', text: 'Category image uploaded successfully!' });
+      setTimeout(() => setMessage(null), 3000);
+    }
   };
 
   if (loading) {
@@ -300,17 +374,41 @@ export default function ContentPage() {
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
-                      Background Image URL
-                    </label>
-                    <input
-                      type="url"
-                      value={heroMain.image_url || ''}
-                      onChange={(e) => setHeroMain({ ...heroMain, image_url: e.target.value })}
-                      placeholder="https://images.pexels.com/..."
-                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-black"
-                    />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
+                        Background Image URL
+                      </label>
+                      <input
+                        type="url"
+                        value={heroMain.image_url || ''}
+                        onChange={(e) => setHeroMain({ ...heroMain, image_url: e.target.value })}
+                        placeholder="https://images.pexels.com/..."
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-black"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
+                        Or Upload Image
+                      </label>
+                      <input
+                        ref={heroImageRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleHeroImageUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => heroImageRef.current?.click()}
+                        disabled={uploading}
+                        className="px-4 py-2 bg-white border border-black text-black uppercase tracking-wider text-sm hover:bg-gray-50 disabled:opacity-50 inline-flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {uploading ? 'Uploading...' : 'Upload Image'}
+                      </button>
+                      <p className="text-xs text-gray-500 mt-2">Max 5MB. Recommended: 1920x1080px</p>
+                    </div>
                   </div>
                 )}
 
@@ -406,6 +504,27 @@ export default function ContentPage() {
                       onChange={(e) => updateCategoryBanner(index, 'image_url', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Upload Image</label>
+                    <input
+                      ref={(el) => categoryImageRefs.current[banner.id] = el}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleCategoryImageUpload(e, index)}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => categoryImageRefs.current[banner.id]?.click()}
+                      disabled={uploading}
+                      className="w-full py-2 bg-white border border-black text-black text-xs uppercase tracking-wider hover:bg-gray-50 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <Upload className="w-3 h-3" />
+                      {uploading ? 'Uploading...' : 'Upload'}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-1">Max 5MB. Recommended: 800x1200px</p>
                   </div>
 
                   <div>
