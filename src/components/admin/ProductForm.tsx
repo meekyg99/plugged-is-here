@@ -72,9 +72,22 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   }, [productId]);
 
   const fetchCategories = async () => {
+    console.log('🔍 Fetching categories from database...');
     const { data, error } = await supabase.from('categories').select('*').order('name');
-    console.log('Categories fetched:', data, 'Error:', error);
-    if (data) setCategories(data);
+    console.log('📦 Categories fetched:', data);
+    console.log('❌ Error (if any):', error);
+    console.log('📊 Number of categories:', data?.length || 0);
+    
+    if (error) {
+      console.error('🚨 Failed to fetch categories:', error.message, error.details);
+    }
+    
+    if (data && data.length > 0) {
+      console.log('✅ Setting categories state with:', data);
+      setCategories(data);
+    } else {
+      console.warn('⚠️ No categories found in database!');
+    }
   };
 
   const fetchProduct = async () => {
@@ -325,7 +338,7 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
 
           <div>
             <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
-              Category *
+              Category * {categories.length > 0 && <span className="text-green-600 text-xs">({categories.length} available)</span>}
             </label>
             <select
               value={formData.category_id}
@@ -333,6 +346,7 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
               className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-black"
             >
               <option value="">Select Category</option>
+              {categories.length === 0 && <option disabled>Loading categories...</option>}
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -340,6 +354,11 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
               ))}
             </select>
             {errors.category_id && <p className="text-red-600 text-sm mt-1">{errors.category_id}</p>}
+            {categories.length === 0 && (
+              <p className="text-yellow-600 text-xs mt-1">
+                ⚠️ No categories found. Check browser console (F12) for errors.
+              </p>
+            )}
           </div>
 
           <div>
