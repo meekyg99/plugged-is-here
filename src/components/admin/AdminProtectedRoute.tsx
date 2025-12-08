@@ -1,6 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useAdminSession } from '../../hooks/useAdminSession';
 import { useNavigate } from '../../hooks/useNavigate';
 import { Shield } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -15,7 +14,7 @@ interface AdminProtectedRouteProps {
  */
 async function verifyAdminRoleFromServer(userId: string): Promise<boolean> {
   try {
-    // Get role directly from profiles table - RLS ensures user can only access their own profile
+    // Get role directly from profiles table
     const { data, error } = await supabase
       .from('profiles')
       .select('role')
@@ -23,27 +22,26 @@ async function verifyAdminRoleFromServer(userId: string): Promise<boolean> {
       .single();
     
     if (error || !data) {
+      console.error('Failed to verify admin role:', error);
       return false;
     }
     
     // Only these roles have admin access
     const adminRoles = ['admin', 'manager', 'support'];
     return adminRoles.includes(data.role);
-  } catch {
+  } catch (err) {
+    console.error('Error verifying admin role:', err);
     return false;
   }
 }
 
 export default function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
-  const { sessionValid, checking: sessionChecking } = useAdminSession();
   const navigate = useNavigate();
   const [verifyingRole, setVerifyingRole] = useState(true);
   const [isVerifiedAdmin, setIsVerifiedAdmin] = useState(false);
 
-  const loading = authLoading || sessionChecking || verifyingRole;
-
-  // Server-side role verification - CRITICAL SECURITY CHECK
+  // Server-side role verification
   useEffect(() => {
     const verifyRole = async () => {
       if (!user) {
@@ -65,29 +63,25 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
     }
   }, [user, authLoading]);
 
+  // Handle redirects
   useEffect(() => {
-    if (!loading) {
+    if (!authLoading && !verifyingRole) {
       // Not authenticated at all
       if (!user) {
         navigate('/admin/login');
         return;
       }
 
-      // Not a verified admin - redirect to home (don't reveal admin exists)
+      // Not a verified admin - redirect to home
       if (!isVerifiedAdmin) {
         navigate('/');
         return;
       }
-
-      // Admin but no valid 2FA session
-      if (!sessionValid) {
-        navigate('/admin/login');
-        return;
-      }
     }
-  }, [user, isVerifiedAdmin, sessionValid, loading, navigate]);
+  }, [user, isVerifiedAdmin, authLoading, verifyingRole, navigate]);
 
-  if (loading) {
+  // Show loading while checking
+  if (authLoading || verifyingRole) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -101,8 +95,8 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
     );
   }
 
-  // Access denied - show generic message (don't reveal why)
-  if (!user || !isVerifiedAdmin || !sessionValid) {
+  // Access denied
+  if (!user || !isVerifiedAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
