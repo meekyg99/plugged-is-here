@@ -8,10 +8,10 @@ export function useAdminSession() {
   const navigate = useNavigate();
 
   const validateSession = async () => {
-    const token = localStorage.getItem('admin_session_token');
+    const authenticated = localStorage.getItem('admin_authenticated');
     const expiresStr = localStorage.getItem('admin_session_expires');
 
-    if (!token || !expiresStr) {
+    if (!authenticated || !expiresStr) {
       setSessionValid(false);
       setChecking(false);
       return false;
@@ -26,22 +26,33 @@ export function useAdminSession() {
       return false;
     }
 
+    // Verify user is still authenticated and has admin role
     try {
-      // Validate with backend and refresh
-      const { data, error } = await supabase.rpc('validate_admin_session', {
-        session_token: token,
-      });
-
-      if (error || !data?.valid) {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
         clearSession();
         setSessionValid(false);
         setChecking(false);
         return false;
       }
 
-      // Update expiration time
-      const newExpires = new Date(data.expires_at).getTime();
-      localStorage.setItem('admin_session_expires', newExpires.toString());
+      // Check admin role from database
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile || !['admin', 'manager', 'support'].includes(profile.role)) {
+        clearSession();
+        setSessionValid(false);
+        setChecking(false);
+        return false;
+      }
+
+      // Extend session on successful validation
+      localStorage.setItem('admin_session_expires', (Date.now() + 30 * 60 * 1000).toString());
 
       setSessionValid(true);
       setChecking(false);
@@ -56,7 +67,7 @@ export function useAdminSession() {
   };
 
   const clearSession = () => {
-    localStorage.removeItem('admin_session_token');
+    localStorage.removeItem('admin_authenticated');
     localStorage.removeItem('admin_session_expires');
   };
 
