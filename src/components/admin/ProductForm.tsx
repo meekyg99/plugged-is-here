@@ -72,7 +72,8 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   }, [productId]);
 
   const fetchCategories = async () => {
-    const { data } = await supabase.from('categories').select('*').order('name');
+    const { data, error } = await supabase.from('categories').select('*').order('name');
+    console.log('Categories fetched:', data, 'Error:', error);
     if (data) setCategories(data);
   };
 

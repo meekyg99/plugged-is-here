@@ -6,7 +6,7 @@ import { WishlistProvider } from './contexts/WishlistContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
-import DevTools from './components/DevTools';
+
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import HomePage from './pages/HomePage';
@@ -27,6 +27,7 @@ import InventoryPage from './pages/admin/InventoryPage';
 import CustomersPage from './pages/admin/CustomersPage';
 import ReportsPage from './pages/admin/ReportsPage';
 import ContentPage from './pages/admin/ContentPage';
+import CategoriesPage from './pages/admin/CategoriesPage';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -79,6 +80,7 @@ function App() {
               <Route path="/admin/products/:id" element={<AdminProtectedRoute><ProductEditPage /></AdminProtectedRoute>} />
               <Route path="/admin/inventory" element={<AdminProtectedRoute><InventoryPage /></AdminProtectedRoute>} />
               <Route path="/admin/customers" element={<AdminProtectedRoute><CustomersPage /></AdminProtectedRoute>} />
+              <Route path="/admin/categories" element={<AdminProtectedRoute><CategoriesPage /></AdminProtectedRoute>} />
               <Route path="/admin/content" element={<AdminProtectedRoute><ContentPage /></AdminProtectedRoute>} />
               <Route path="/admin/reports" element={<AdminProtectedRoute><ReportsPage /></AdminProtectedRoute>} />
             </Routes>

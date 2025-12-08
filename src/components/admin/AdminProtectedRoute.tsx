@@ -63,7 +63,7 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
     }
   }, [user, authLoading]);
 
-  // Handle redirects
+  // Handle redirects - only after all loading is complete
   useEffect(() => {
     if (!authLoading && !verifyingRole) {
       // Not authenticated at all
@@ -72,16 +72,16 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
         return;
       }
 
-      // Not a verified admin - redirect to home
-      if (!isVerifiedAdmin) {
+      // Not a verified admin - redirect to home (but only after verification is complete)
+      if (user && !isVerifiedAdmin) {
         navigate('/');
         return;
       }
     }
   }, [user, isVerifiedAdmin, authLoading, verifyingRole, navigate]);
 
-  // Show loading while checking
-  if (authLoading || verifyingRole) {
+  // Show loading while checking or during redirects
+  if (authLoading || verifyingRole || !user || !isVerifiedAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -90,27 +90,6 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
           </div>
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
           <p className="mt-4 text-gray-600 tracking-wider">Verifying access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Access denied
-  if (!user || !isVerifiedAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Shield className="w-16 h-16 text-red-600 mx-auto mb-4" />
-          <h1 className="text-2xl tracking-wider uppercase mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-6">
-            You do not have permission to access this area.
-          </p>
-          <button
-            onClick={() => navigate('/')}
-            className="px-6 py-3 bg-black text-white uppercase tracking-wider hover:bg-gray-800 transition-colors"
-          >
-            Go Home
-          </button>
         </div>
       </div>
     );
