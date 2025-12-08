@@ -3,6 +3,13 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types/database';
 import { sendWelcomeEmail } from '../services/emailService';
+import { 
+  isValidEmail, 
+  isValidName, 
+  sanitizeName, 
+  SecureErrors, 
+  toSafeError 
+} from '../utils/security';
 
 interface AuthContextType {
   user: User | null;
@@ -74,41 +81,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      // Validate inputs
+      const trimmedEmail = email.toLowerCase().trim();
+      const sanitizedName = sanitizeName(fullName);
+      
+      if (!isValidEmail(trimmedEmail)) {
+        return { error: new Error(SecureErrors.INVALID_EMAIL) };
+      }
+      
+      if (!isValidName(sanitizedName)) {
+        return { error: new Error(SecureErrors.INVALID_NAME) };
+      }
+      
+      if (password.length < 8) {
+        return { error: new Error('Password must be at least 8 characters') };
+      }
+      
       const { error, data } = await supabase.auth.signUp({
-        email,
+        email: trimmedEmail,
         password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: sanitizedName,
           },
         },
       });
       
       if (error) {
-        return { error };
+        // Never reveal if email exists - use generic message
+        return { error: new Error(SecureErrors.AUTH_GENERIC) };
       }
 
       // Send welcome email (non-blocking - don't fail signup if email fails)
       if (data.user) {
-        sendWelcomeEmail(email, fullName, window.location.origin)
-          .catch(err => console.error('Failed to send welcome email:', err));
+        sendWelcomeEmail(trimmedEmail, sanitizedName, window.location.origin)
+          .catch(() => { /* Silently fail - don't expose email errors */ });
       }
       
       return { error: null };
     } catch (error) {
-      return { error: error as Error };
+      // Never expose internal errors
+      return { error: new Error(toSafeError(error, 'signUp')) };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Validate email format
+      const trimmedEmail = email.toLowerCase().trim();
+      
+      if (!isValidEmail(trimmedEmail)) {
+        // Don't reveal that email format is wrong vs wrong credentials
+        return { error: new Error(SecureErrors.AUTH_FAILED) };
+      }
+      
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: trimmedEmail,
         password,
       });
-      return { error: error || null };
+      
+      if (error) {
+        // SECURITY: Always show same message for any auth failure
+        // Never reveal if email exists, wrong password, account locked, etc.
+        return { error: new Error(SecureErrors.AUTH_FAILED) };
+      }
+      
+      return { error: null };
     } catch (error) {
-      return { error: error as Error };
+      // Never expose internal errors
+      return { error: new Error(SecureErrors.AUTH_FAILED) };
     }
   };
 

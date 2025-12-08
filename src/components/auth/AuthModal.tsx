@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { isValidEmail, isValidName, sanitizeName, SecureErrors } from '../../utils/security';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -25,22 +26,42 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: A
     setLoading(true);
 
     try {
+      // Client-side validation
+      const trimmedEmail = email.toLowerCase().trim();
+      
+      if (!isValidEmail(trimmedEmail)) {
+        setError(SecureErrors.INVALID_EMAIL);
+        setLoading(false);
+        return;
+      }
+      
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters');
+        setLoading(false);
+        return;
+      }
+      
       if (mode === 'signin') {
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(trimmedEmail, password);
         if (error) {
+          // Error message is already sanitized by AuthContext
           setError(error.message);
         } else {
           onClose();
           resetForm();
         }
       } else {
-        if (!fullName.trim()) {
-          setError('Full name is required');
+        const sanitizedName = sanitizeName(fullName);
+        
+        if (!isValidName(sanitizedName)) {
+          setError(SecureErrors.INVALID_NAME);
           setLoading(false);
           return;
         }
-        const { error } = await signUp(email, password, fullName);
+        
+        const { error } = await signUp(trimmedEmail, password, sanitizedName);
         if (error) {
+          // Error message is already sanitized by AuthContext
           setError(error.message);
         } else {
           onClose();
@@ -48,7 +69,8 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: A
         }
       }
     } catch {
-      setError('An unexpected error occurred');
+      // Never expose internal errors
+      setError(SecureErrors.SERVER_ERROR);
     } finally {
       setLoading(false);
     }

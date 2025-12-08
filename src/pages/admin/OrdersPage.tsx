@@ -54,7 +54,8 @@ export default function OrdersPage() {
 
   const filteredOrders = orders.filter((order) =>
     order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.email.toLowerCase().includes(searchTerm.toLowerCase())
+    order.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.tracking_id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: OrderStatus) => {
@@ -96,7 +97,7 @@ export default function OrdersPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by order number or email..."
+                  placeholder="Search by tracking ID, order number or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-black transition-colors"
@@ -138,7 +139,7 @@ export default function OrdersPage() {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs tracking-wider uppercase text-gray-700">
-                      Order Number
+                      Tracking ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs tracking-wider uppercase text-gray-700">
                       Customer
@@ -161,7 +162,8 @@ export default function OrdersPage() {
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <p className="text-sm font-medium">{order.order_number}</p>
+                        <p className="text-sm font-bold text-purple-600">{order.tracking_id}</p>
+                        <p className="text-xs text-gray-500">{order.order_number}</p>
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm">{order.email}</p>

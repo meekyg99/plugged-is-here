@@ -31,6 +31,29 @@ export default function CheckoutReview({ data, onBack }: CheckoutReviewProps) {
     setError('');
 
     try {
+      // First, check stock availability for all items
+      const variantIds = items.map(item => item.variant_id);
+      const { data: variants, error: stockCheckError } = await supabase
+        .from('product_variants')
+        .select('id, stock_quantity, size, color')
+        .in('id', variantIds);
+
+      if (stockCheckError) throw stockCheckError;
+
+      // Verify all items have sufficient stock
+      for (const item of items) {
+        const variant = variants?.find(v => v.id === item.variant_id);
+        if (!variant) {
+          throw new Error(`Product variant not found for ${item.product?.name}`);
+        }
+        if (variant.stock_quantity < item.quantity) {
+          throw new Error(
+            `Insufficient stock for ${item.product?.name} (${variant.color}/${variant.size}). ` +
+            `Only ${variant.stock_quantity} available.`
+          );
+        }
+      }
+
       const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
       const { data: order, error: orderError } = await supabase
@@ -68,14 +91,9 @@ export default function CheckoutReview({ data, onBack }: CheckoutReviewProps) {
 
       if (itemsError) throw itemsError;
 
-      for (const item of items) {
-        const { error: stockError } = await supabase.rpc('decrement_stock', {
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-        });
-
-        if (stockError) console.error('Stock update error:', stockError);
-      }
+      // NOTE: Stock is NOT decremented here.
+      // Stock will only be reduced when payment is confirmed as successful.
+      // This prevents inventory issues when payments fail.
 
       const { error: paymentError } = await supabase
         .from('payments')
@@ -89,9 +107,10 @@ export default function CheckoutReview({ data, onBack }: CheckoutReviewProps) {
 
       if (paymentError) throw paymentError;
 
-      // Send order confirmation email (non-blocking)
+      // Send order confirmation email with tracking ID (non-blocking)
       sendOrderConfirmationEmail(data.email, {
-        orderNumber: orderNumber,
+        orderNumber: order.order_number,
+        trackingId: order.tracking_id,
         orderDate: new Date().toLocaleDateString('en-US', { 
           year: 'numeric', 
           month: 'long', 
@@ -118,6 +137,7 @@ export default function CheckoutReview({ data, onBack }: CheckoutReviewProps) {
         estimatedDelivery: data.shippingMethod === 'express' 
           ? '2-3 business days' 
           : '5-7 business days',
+        trackingUrl: `${window.location.origin}/track-order`,
       }).catch(err => console.error('Failed to send order confirmation email:', err));
 
       clearCart();

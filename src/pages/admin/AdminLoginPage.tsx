@@ -3,6 +3,7 @@ import { Shield, Lock, Mail, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from '../../hooks/useNavigate';
 import { supabase } from '../../lib/supabase';
+import { validateEmail, sanitizeInput } from '../../utils/security';
 
 export default function AdminLoginPage() {
   const [step, setStep] = useState<'email' | '2fa'>('email');
@@ -67,9 +68,24 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
 
+    // Input validation
+    const sanitizedEmail = sanitizeInput(email.trim().toLowerCase());
+    
+    if (!validateEmail(sanitizedEmail)) {
+      setError('Invalid credentials');
+      setLoading(false);
+      return;
+    }
+
+    if (!password || password.length < 1) {
+      setError('Invalid credentials');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Check rate limiting
-      const canProceed = await checkRateLimit(email);
+      const canProceed = await checkRateLimit(sanitizedEmail);
       if (!canProceed) {
         setLoading(false);
         return;
@@ -77,20 +93,20 @@ export default function AdminLoginPage() {
 
       // Attempt sign in
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: sanitizedEmail,
         password,
       });
 
       if (error) {
-        await logLoginAttempt(email, false, error.message);
-        setError('Invalid email or password');
+        await logLoginAttempt(sanitizedEmail, false, 'auth_error');
+        setError('Invalid credentials');
         setLoading(false);
         return;
       }
 
       if (!data.user) {
-        await logLoginAttempt(email, false, 'No user returned');
-        setError('Login failed');
+        await logLoginAttempt(sanitizedEmail, false, 'auth_error');
+        setError('Invalid credentials');
         setLoading(false);
         return;
       }
@@ -103,9 +119,10 @@ export default function AdminLoginPage() {
         .single();
 
       if (!profile || !['admin', 'manager', 'support'].includes(profile.role)) {
-        await logLoginAttempt(email, false, 'Not an admin user');
+        await logLoginAttempt(sanitizedEmail, false, 'access_denied');
         await supabase.auth.signOut();
-        setError('Access denied. This login is for administrators only.');
+        // Generic error - don't reveal that account exists but isn't admin
+        setError('Invalid credentials');
         setLoading(false);
         return;
       }
@@ -117,8 +134,8 @@ export default function AdminLoginPage() {
       );
 
       if (codeError) {
-        await logLoginAttempt(email, false, '2FA generation failed');
-        setError('Failed to generate verification code');
+        await logLoginAttempt(sanitizedEmail, false, '2fa_error');
+        setError('Authentication error. Please try again.');
         setLoading(false);
         return;
       }
@@ -130,11 +147,10 @@ export default function AdminLoginPage() {
 
       setUserId(data.user.id);
       setStep('2fa');
-      await logLoginAttempt(email, true);
+      await logLoginAttempt(sanitizedEmail, true);
     } catch (error) {
-      await logLoginAttempt(email, false, 'Unexpected error');
-      setError('An unexpected error occurred');
-      console.error('Login error:', error);
+      await logLoginAttempt(sanitizedEmail, false, 'unexpected_error');
+      setError('Authentication error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -145,10 +161,20 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
 
+    // Validate 2FA code format (should be 6 digits)
+    const sanitizedCode = sanitizeInput(twoFactorCode.trim());
+    if (!/^\d{6}$/.test(sanitizedCode)) {
+      setError('Invalid verification code');
+      setLoading(false);
+      return;
+    }
+
     try {
       if (!userId) {
-        setError('Invalid session. Please start over.');
+        setError('Session expired. Please start over.');
         setStep('email');
+        setPassword('');
+        setTwoFactorCode('');
         setLoading(false);
         return;
       }
@@ -158,12 +184,12 @@ export default function AdminLoginPage() {
         'verify_admin_2fa_code',
         {
           user_id: userId,
-          input_code: twoFactorCode,
+          input_code: sanitizedCode,
         }
       );
 
       if (verifyError || !isValid) {
-        setError('Invalid or expired verification code');
+        setError('Invalid verification code');
         setLoading(false);
         return;
       }
@@ -179,7 +205,7 @@ export default function AdminLoginPage() {
       );
 
       if (sessionError || !token) {
-        setError('Failed to create session');
+        setError('Authentication error. Please try again.');
         setLoading(false);
         return;
       }
@@ -198,8 +224,7 @@ export default function AdminLoginPage() {
       // Redirect to admin dashboard
       navigate('/admin/dashboard');
     } catch (error) {
-      setError('An unexpected error occurred');
-      console.error('2FA verification error:', error);
+      setError('Authentication error. Please try again.');
     } finally {
       setLoading(false);
     }

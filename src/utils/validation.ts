@@ -1,4 +1,5 @@
 import { NIGERIAN_STATES } from '../constants/nigerianStates';
+import { sanitizeInput, isValidName as securityValidateName } from './security';
 
 export const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,6 +30,32 @@ export const validateRequiredField = (value: string | undefined | null): boolean
   return typeof value === 'string' && value.trim().length > 0;
 };
 
+// Validate name has only letters, spaces, hyphens, and apostrophes
+export const validateFullName = (name: string): boolean => {
+  if (!name || name.trim().length < 2 || name.trim().length > 100) {
+    return false;
+  }
+  return securityValidateName(name);
+};
+
+// Validate city name (letters, spaces, hyphens)
+export const validateCityName = (city: string): boolean => {
+  if (!city || city.trim().length < 2 || city.trim().length > 100) {
+    return false;
+  }
+  // City names: letters, spaces, hyphens, periods allowed
+  return /^[a-zA-Z\s\-\.]+$/.test(city.trim());
+};
+
+// Validate street address (alphanumeric with common punctuation)
+export const validateStreetAddress = (address: string): boolean => {
+  if (!address || address.trim().length < 5 || address.trim().length > 200) {
+    return false;
+  }
+  // Allow letters, numbers, spaces, commas, periods, hyphens, slashes, #
+  return /^[a-zA-Z0-9\s,.\-\/#]+$/.test(address.trim());
+};
+
 export interface AddressValidationErrors {
   full_name?: string;
   phone?: string;
@@ -53,6 +80,8 @@ export const validateAddress = (address: {
 
   if (!validateRequiredField(address.full_name)) {
     errors.full_name = 'Full name is required';
+  } else if (address.full_name && !validateFullName(address.full_name)) {
+    errors.full_name = 'Please enter a valid name (letters only)';
   }
 
   if (!validateRequiredField(address.phone)) {
@@ -65,10 +94,14 @@ export const validateAddress = (address: {
 
   if (!validateRequiredField(address.address_line1)) {
     errors.address_line1 = 'Street address is required';
+  } else if (address.address_line1 && !validateStreetAddress(address.address_line1)) {
+    errors.address_line1 = 'Please enter a valid street address';
   }
 
   if (!validateRequiredField(address.city)) {
     errors.city = 'City is required';
+  } else if (address.city && !validateCityName(address.city)) {
+    errors.city = 'Please enter a valid city name';
   }
 
   if (!validateRequiredField(address.state)) {

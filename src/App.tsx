@@ -13,6 +13,7 @@ import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
+import TrackOrderPage from './pages/TrackOrderPage';
 import AccountPage from './pages/AccountPage';
 import OrdersListPage from './pages/OrdersListPage';
 import WishlistPage from './pages/WishlistPage';
@@ -62,6 +63,8 @@ function App() {
               <Route path="/products" element={<AppLayout><CategoryPage /></AppLayout>} />
               <Route path="/checkout" element={<AppLayout><CheckoutPage /></AppLayout>} />
               <Route path="/order-success" element={<AppLayout><OrderSuccessPage /></AppLayout>} />
+              <Route path="/order-success/:orderId" element={<AppLayout><OrderSuccessPage /></AppLayout>} />
+              <Route path="/track-order" element={<AppLayout><TrackOrderPage /></AppLayout>} />
               <Route path="/account" element={<AppLayout><ProtectedRoute><AccountPage /></ProtectedRoute></AppLayout>} />
               <Route path="/orders" element={<AppLayout><ProtectedRoute><OrdersListPage /></ProtectedRoute></AppLayout>} />
               <Route path="/wishlist" element={<AppLayout><ProtectedRoute><WishlistPage /></ProtectedRoute></AppLayout>} />

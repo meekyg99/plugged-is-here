@@ -1,5 +1,6 @@
 interface OrderStatusEmailProps {
   orderNumber: string;
+  trackingId: string;
   customerName: string;
   status: 'processing' | 'shipped' | 'delivered';
   trackingNumber?: string;
@@ -82,7 +83,8 @@ export function renderOrderStatusEmail(props: OrderStatusEmailProps): string {
         <p>${config.message}</p>
         
         <div class="order-info">
-          <p style="margin:0;"><strong>Order Number:</strong> #${props.orderNumber}</p>
+          <p style="margin:0;"><strong>Tracking ID:</strong> <span style="color:#667eea;font-weight:700;">${props.trackingId}</span></p>
+          <p style="margin:10px 0 0 0;"><strong>Order Number:</strong> #${props.orderNumber}</p>
           ${props.estimatedDelivery ? `<p style="margin:10px 0 0 0;"><strong>Estimated Delivery:</strong> ${props.estimatedDelivery}</p>` : ''}
         </div>
 

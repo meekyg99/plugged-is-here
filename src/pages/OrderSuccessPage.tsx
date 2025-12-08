@@ -83,6 +83,22 @@ export default function OrderSuccessPage() {
             </p>
           </div>
 
+          {/* Tracking ID - Primary Display */}
+          <div className="mb-6 p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg">
+            <p className="text-sm opacity-80 mb-1 tracking-wider uppercase">Your Tracking ID</p>
+            <p className="text-3xl font-bold tracking-wider">{order.tracking_id}</p>
+            <p className="text-sm opacity-80 mt-2">Save this ID to track your order anytime</p>
+          </div>
+
+          <div className="mb-6">
+            <a
+              href="/track-order"
+              className="inline-block px-8 py-3 bg-black text-white uppercase tracking-wider hover:bg-gray-800 transition-colors"
+            >
+              Track Your Order
+            </a>
+          </div>
+
           <div className="mb-8 p-4 bg-gray-50 border border-gray-200">
             <p className="text-sm text-gray-600 mb-1 tracking-wider uppercase">Order Number</p>
             <p className="text-xl font-medium">{order.order_number}</p>
@@ -101,7 +117,7 @@ export default function OrderSuccessPage() {
                     <p><strong>Bank:</strong> Example Bank</p>
                     <p><strong>Account Name:</strong> Fashion Store Ltd</p>
                     <p><strong>Account Number:</strong> 0123456789</p>
-                    <p><strong>Reference:</strong> {order.order_number}</p>
+                    <p><strong>Reference:</strong> {order.tracking_id}</p>
                   </div>
                   <p className="text-xs text-blue-700 mt-3">
                     Your order will be processed once we confirm your payment.

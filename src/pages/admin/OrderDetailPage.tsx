@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { ArrowLeft, Package, Truck, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { OrderWithDetails, OrderStatus } from '../../types/database';
 import { sendOrderStatusEmail } from '../../services/emailService';
+import { orderService } from '../../services/orderService';
 
 export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderWithDetails | null>(null);
@@ -64,16 +65,17 @@ export default function OrderDetailPage() {
         const shippingAddr = order.shipping_address as any;
         sendOrderStatusEmail(order.email, {
           orderNumber: order.order_number,
+          trackingId: order.tracking_id,
           status: selectedStatus as 'processing' | 'shipped' | 'delivered',
           customerName: shippingAddr?.full_name || 'Customer',
-          trackingNumber: order.tracking_number || undefined,
-          trackingUrl: order.tracking_url || undefined,
-          estimatedDelivery: undefined, // Could calculate based on shipping method
+          trackingNumber: undefined,
+          trackingUrl: `${window.location.origin}/track-order`,
+          estimatedDelivery: selectedStatus === 'shipped' ? '2-5 business days' : undefined,
         }).catch(err => console.error('Failed to send status email:', err));
       }
       
       await fetchOrderDetails();
-      alert('Order status updated successfully');
+      alert('Order status updated successfully. Customer has been notified via email.');
     } catch (error) {
       console.error('Error updating order:', error);
       alert('Failed to update order status');
@@ -97,6 +99,99 @@ export default function OrderDetailPage() {
     } catch (error) {
       console.error('Error updating notes:', error);
       alert('Failed to update notes');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const confirmPayment = async () => {
+    if (!orderId || !order) return;
+    
+    const confirmed = window.confirm(
+      'Confirm payment received? This will:\n' +
+      '• Mark payment as completed\n' +
+      '• Reduce stock for ordered items\n' +
+      '• Update order status to "Processing"\n\n' +
+      'This action cannot be easily undone.'
+    );
+    
+    if (!confirmed) return;
+
+    setUpdating(true);
+    try {
+      const result = await orderService.confirmPaymentAndReduceStock(orderId);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to confirm payment');
+      }
+
+      await fetchOrderDetails();
+      alert('Payment confirmed! Stock has been updated.');
+    } catch (error: any) {
+      console.error('Error confirming payment:', error);
+      alert(error.message || 'Failed to confirm payment');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const cancelOrder = async () => {
+    if (!orderId || !order) return;
+    
+    const confirmed = window.confirm(
+      'Cancel this order? This will:\n' +
+      '• Mark order as cancelled\n' +
+      '• Mark payment as failed\n' +
+      '• Stock will NOT be affected (wasn\'t reduced yet)\n\n' +
+      'Continue?'
+    );
+    
+    if (!confirmed) return;
+
+    setUpdating(true);
+    try {
+      const result = await orderService.cancelOrder(orderId, adminNotes || 'Cancelled by admin');
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to cancel order');
+      }
+
+      await fetchOrderDetails();
+      alert('Order cancelled successfully.');
+    } catch (error: any) {
+      console.error('Error cancelling order:', error);
+      alert(error.message || 'Failed to cancel order');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const refundOrder = async () => {
+    if (!orderId || !order) return;
+    
+    const confirmed = window.confirm(
+      'Refund this order? This will:\n' +
+      '• Mark order as refunded\n' +
+      '• Mark payment as refunded\n' +
+      '• Restore stock for ordered items\n\n' +
+      'Continue?'
+    );
+    
+    if (!confirmed) return;
+
+    setUpdating(true);
+    try {
+      const result = await orderService.restoreStockForOrder(orderId);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to refund order');
+      }
+
+      await fetchOrderDetails();
+      alert('Order refunded! Stock has been restored.');
+    } catch (error: any) {
+      console.error('Error refunding order:', error);
+      alert(error.message || 'Failed to refund order');
     } finally {
       setUpdating(false);
     }
@@ -153,7 +248,12 @@ export default function OrderDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Orders
           </a>
-          <h1 className="text-3xl tracking-wider uppercase font-light">Order {order.order_number}</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl tracking-wider uppercase font-light">Order {order.order_number}</h1>
+            <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-bold rounded">
+              {order.tracking_id}
+            </span>
+          </div>
           <p className="text-gray-600 mt-2">
             Placed on {new Date(order.created_at).toLocaleDateString()} at{' '}
             {new Date(order.created_at).toLocaleTimeString()}
@@ -330,13 +430,58 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Status</span>
-                    <span className="capitalize">{payment.status}</span>
+                    <span className={`capitalize font-medium ${
+                      payment.status === 'completed' ? 'text-green-600' :
+                      payment.status === 'failed' ? 'text-red-600' :
+                      payment.status === 'refunded' ? 'text-orange-600' :
+                      'text-yellow-600'
+                    }`}>{payment.status}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount</span>
                     <span>₦{payment.amount.toLocaleString()}</span>
                   </div>
                 </div>
+
+                {/* Payment Action Buttons */}
+                {payment.status === 'pending' && order.status === 'pending' && (
+                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                    <button
+                      onClick={confirmPayment}
+                      disabled={updating}
+                      className="w-full px-4 py-2 bg-green-600 text-white uppercase tracking-wider text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                      {updating ? 'Processing...' : 'Confirm Payment'}
+                    </button>
+                    <button
+                      onClick={cancelOrder}
+                      disabled={updating}
+                      className="w-full px-4 py-2 bg-red-600 text-white uppercase tracking-wider text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+                    >
+                      Cancel Order
+                    </button>
+                    <p className="text-xs text-gray-500 flex items-start gap-1 mt-2">
+                      <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      Stock is reserved but not yet deducted. It will only be reduced when payment is confirmed.
+                    </p>
+                  </div>
+                )}
+
+                {/* Refund button for confirmed orders */}
+                {payment.status === 'completed' && ['processing', 'shipped', 'delivered'].includes(order.status) && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <button
+                      onClick={refundOrder}
+                      disabled={updating}
+                      className="w-full px-4 py-2 bg-orange-600 text-white uppercase tracking-wider text-sm hover:bg-orange-700 transition-colors disabled:opacity-50"
+                    >
+                      {updating ? 'Processing...' : 'Refund Order'}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-2">
+                      This will restore stock and mark payment as refunded.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -85,6 +85,7 @@ export interface Order {
   id: string;
   user_id: string | null;
   order_number: string;
+  tracking_id: string;
   status: OrderStatus;
   email: string;
   phone: string | null;

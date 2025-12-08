@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NIGERIAN_STATES } from '../../constants/nigerianStates';
 import { Address } from '../../types/database';
 import { validateAddress, validateEmail } from '../../utils/validation';
+import { sanitizeInput } from '../../utils/security';
 
 interface CheckoutShippingProps {
   data: {
@@ -60,9 +61,21 @@ export default function CheckoutShipping({ data, onUpdate, onNext, onBack }: Che
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Sanitize all form data before saving
+      const sanitizedForm: Address = {
+        full_name: sanitizeInput(shippingForm.full_name),
+        phone: sanitizeInput(shippingForm.phone),
+        address_line1: sanitizeInput(shippingForm.address_line1),
+        address_line2: shippingForm.address_line2 ? sanitizeInput(shippingForm.address_line2) : '',
+        city: sanitizeInput(shippingForm.city),
+        state: sanitizeInput(shippingForm.state),
+        postal_code: shippingForm.postal_code ? sanitizeInput(shippingForm.postal_code) : '',
+        country: shippingForm.country || 'Nigeria',
+      };
+      
       onUpdate({
-        shippingAddress: shippingForm,
-        billingAddress: data.useSameAddress ? shippingForm : data.billingAddress,
+        shippingAddress: sanitizedForm,
+        billingAddress: data.useSameAddress ? sanitizedForm : data.billingAddress,
       });
       onNext();
     }

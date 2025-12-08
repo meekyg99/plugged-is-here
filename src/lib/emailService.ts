@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
+const API_KEY = import.meta.env.VITE_RESEND_API_KEY;
+const resend = API_KEY && API_KEY !== 'your-resend-api-key-here' ? new Resend(API_KEY) : null;
 
 const FROM_EMAIL = import.meta.env.VITE_EMAIL_FROM_ADDRESS || 'Plugged <noreply@pluggedby212.shop>';
 const BRAND_NAME = 'Plugged';
@@ -135,6 +136,11 @@ const emailTemplate = (content: string, preheader?: string) => `
 
 // Send email function
 async function sendEmail({ to, subject, html }: EmailOptions) {
+  if (!resend) {
+    console.warn('Email service not configured - skipping email send');
+    return { success: false, error: 'Email service not configured' };
+  }
+  
   try {
     const response = await resend.emails.send({
       from: FROM_EMAIL,

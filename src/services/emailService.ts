@@ -4,7 +4,9 @@ import { renderOrderConfirmationEmail } from '../emails/templates/OrderConfirmat
 import { renderOrderStatusEmail } from '../emails/templates/OrderStatusEmail';
 import { renderAdmin2FAEmail } from '../emails/templates/Admin2FAEmail';
 
-const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
+// Only initialize Resend if API key is provided
+const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+const resend = apiKey && apiKey !== 'your-resend-api-key-here' ? new Resend(apiKey) : null;
 const fromEmail = import.meta.env.VITE_EMAIL_FROM_ADDRESS || 'onboarding@resend.dev';
 
 interface EmailResponse {
@@ -13,16 +15,26 @@ interface EmailResponse {
   error?: string;
 }
 
+// Helper to check if email is configured
+function isEmailConfigured(): boolean {
+  return resend !== null;
+}
+
 // Welcome Email
 export async function sendWelcomeEmail(
   to: string,
   userName: string,
   shopUrl?: string
 ): Promise<EmailResponse> {
+  if (!isEmailConfigured()) {
+    console.warn('Email not configured - skipping welcome email');
+    return { success: true, messageId: 'skipped-no-api-key' };
+  }
+  
   try {
     const html = renderWelcomeEmail({ userName, shopUrl });
     
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resend!.emails.send({
       from: fromEmail,
       to,
       subject: `Welcome to PLUGGED, ${userName}! 🎉`,
@@ -47,10 +59,15 @@ export async function sendOrderConfirmationEmail(
   to: string,
   orderData: Parameters<typeof renderOrderConfirmationEmail>[0]
 ): Promise<EmailResponse> {
+  if (!isEmailConfigured()) {
+    console.warn('Email not configured - skipping order confirmation email');
+    return { success: true, messageId: 'skipped-no-api-key' };
+  }
+  
   try {
     const html = renderOrderConfirmationEmail(orderData);
     
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resend!.emails.send({
       from: fromEmail,
       to,
       subject: `Order Confirmation - #${orderData.orderNumber}`,
@@ -75,6 +92,11 @@ export async function sendOrderStatusEmail(
   to: string,
   statusData: Parameters<typeof renderOrderStatusEmail>[0]
 ): Promise<EmailResponse> {
+  if (!isEmailConfigured()) {
+    console.warn('Email not configured - skipping order status email');
+    return { success: true, messageId: 'skipped-no-api-key' };
+  }
+  
   try {
     const html = renderOrderStatusEmail(statusData);
     
@@ -84,7 +106,7 @@ export async function sendOrderStatusEmail(
       delivered: 'Your Order Has Been Delivered',
     };
     
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resend!.emails.send({
       from: fromEmail,
       to,
       subject: `${statusTitles[statusData.status]} - #${statusData.orderNumber}`,
@@ -112,6 +134,11 @@ export async function sendAdmin2FAEmail(
   ipAddress?: string,
   userAgent?: string
 ): Promise<EmailResponse> {
+  if (!isEmailConfigured()) {
+    console.warn('Email not configured - skipping 2FA email');
+    return { success: true, messageId: 'skipped-no-api-key' };
+  }
+  
   try {
     const html = renderAdmin2FAEmail({
       code,
@@ -120,7 +147,7 @@ export async function sendAdmin2FAEmail(
       userAgent,
     });
     
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resend!.emails.send({
       from: fromEmail,
       to,
       subject: `🔐 Admin Login Verification Code: ${code}`,
@@ -146,6 +173,11 @@ export async function sendPasswordResetEmail(
   resetUrl: string,
   userName: string
 ): Promise<EmailResponse> {
+  if (!isEmailConfigured()) {
+    console.warn('Email not configured - skipping password reset email');
+    return { success: true, messageId: 'skipped-no-api-key' };
+  }
+  
   try {
     const html = `
 <!DOCTYPE html>
@@ -198,7 +230,7 @@ export async function sendPasswordResetEmail(
 </html>
     `.trim();
     
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await resend!.emails.send({
       from: fromEmail,
       to,
       subject: 'Reset Your PLUGGED Password',

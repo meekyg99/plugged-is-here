@@ -9,6 +9,7 @@ interface OrderItem {
 
 interface OrderConfirmationEmailProps {
   orderNumber: string;
+  trackingId: string;
   orderDate: string;
   customerName: string;
   items: OrderItem[];
@@ -77,6 +78,10 @@ export function renderOrderConfirmationEmail(props: OrderConfirmationEmailProps)
         
         <div class="order-info">
           <div class="order-info-row">
+            <span class="order-info-label">Tracking ID:</span>
+            <span style="font-size:18px;font-weight:700;color:#667eea;">${props.trackingId}</span>
+          </div>
+          <div class="order-info-row">
             <span class="order-info-label">Order Number:</span>
             <span>#${props.orderNumber}</span>
           </div>
@@ -92,11 +97,10 @@ export function renderOrderConfirmationEmail(props: OrderConfirmationEmailProps)
           ` : ''}
         </div>
 
-        ${props.trackingUrl ? `
         <div style="text-align:center;margin:30px 0;">
-          <a href="${props.trackingUrl}" class="btn">Track Your Order</a>
+          <p style="margin:0 0 10px 0;color:#666;">Track your order anytime using your Tracking ID:</p>
+          <a href="${props.trackingUrl || `https://plugged.com/track?id=${props.trackingId}`}" class="btn">Track Your Order</a>
         </div>
-        ` : ''}
 
         <h2>Order Details</h2>
         <table class="items-table">

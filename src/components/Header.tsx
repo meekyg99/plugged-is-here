@@ -149,6 +149,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                       </div>
                       <Link to="/account" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">My Account</Link>
                       <Link to="/orders" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Orders</Link>
+                      <Link to="/track-order" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Track Order</Link>
                       {isAdmin && (
                         <Link to="/admin/dashboard" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors border-t border-gray-200">Admin Dashboard</Link>
                       )}

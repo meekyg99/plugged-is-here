@@ -1,19 +1,69 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAdminSession } from '../../hooks/useAdminSession';
 import { useNavigate } from '../../hooks/useNavigate';
 import { Shield } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface AdminProtectedRouteProps {
   children: ReactNode;
 }
 
+/**
+ * Server-side role verification - NEVER trust client-side role claims
+ * This fetches the role directly from the database using the JWT session
+ */
+async function verifyAdminRoleFromServer(userId: string): Promise<boolean> {
+  try {
+    // Get role directly from profiles table - RLS ensures user can only access their own profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single();
+    
+    if (error || !data) {
+      return false;
+    }
+    
+    // Only these roles have admin access
+    const adminRoles = ['admin', 'manager', 'support'];
+    return adminRoles.includes(data.role);
+  } catch {
+    return false;
+  }
+}
+
 export default function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
-  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { sessionValid, checking: sessionChecking } = useAdminSession();
   const navigate = useNavigate();
+  const [verifyingRole, setVerifyingRole] = useState(true);
+  const [isVerifiedAdmin, setIsVerifiedAdmin] = useState(false);
 
-  const loading = authLoading || sessionChecking;
+  const loading = authLoading || sessionChecking || verifyingRole;
+
+  // Server-side role verification - CRITICAL SECURITY CHECK
+  useEffect(() => {
+    const verifyRole = async () => {
+      if (!user) {
+        setIsVerifiedAdmin(false);
+        setVerifyingRole(false);
+        return;
+      }
+      
+      // Verify role from server, not client state
+      const isAdmin = await verifyAdminRoleFromServer(user.id);
+      setIsVerifiedAdmin(isAdmin);
+      setVerifyingRole(false);
+    };
+    
+    if (!authLoading && user) {
+      verifyRole();
+    } else if (!authLoading) {
+      setVerifyingRole(false);
+    }
+  }, [user, authLoading]);
 
   useEffect(() => {
     if (!loading) {
@@ -23,21 +73,19 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
         return;
       }
 
-      // TEMPORARILY DISABLED - Allow access while we fix the profile issue
-      // TODO: Re-enable after fixing RLS and profile setup
-      // Not an admin
-      // if (!isAdmin) {
-      //   navigate('/');
-      //   return;
-      // }
+      // Not a verified admin - redirect to home (don't reveal admin exists)
+      if (!isVerifiedAdmin) {
+        navigate('/');
+        return;
+      }
 
-      // Admin but no valid session
-      // if (!sessionValid) {
-      //   navigate('/admin/login');
-      //   return;
-      // }
+      // Admin but no valid 2FA session
+      if (!sessionValid) {
+        navigate('/admin/login');
+        return;
+      }
     }
-  }, [user, isAdmin, sessionValid, loading, navigate]);
+  }, [user, isVerifiedAdmin, sessionValid, loading, navigate]);
 
   if (loading) {
     return (
@@ -53,23 +101,21 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
     );
   }
 
-  // TEMPORARILY DISABLED - Allow access while we fix the profile issue
-  // TODO: Re-enable after fixing RLS and profile setup
-  // if (!user || !isAdmin || !sessionValid) {
-  if (!user) {
+  // Access denied - show generic message (don't reveal why)
+  if (!user || !isVerifiedAdmin || !sessionValid) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Shield className="w-16 h-16 text-red-600 mx-auto mb-4" />
           <h1 className="text-2xl tracking-wider uppercase mb-4">Access Denied</h1>
           <p className="text-gray-600 mb-6">
-            You must be logged in to access this area.
+            You do not have permission to access this area.
           </p>
           <button
-            onClick={() => navigate('/admin/login')}
+            onClick={() => navigate('/')}
             className="px-6 py-3 bg-black text-white uppercase tracking-wider hover:bg-gray-800 transition-colors"
           >
-            Go to Admin Login
+            Go Home
           </button>
         </div>
       </div>

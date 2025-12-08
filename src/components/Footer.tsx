@@ -1,10 +1,11 @@
-import { Instagram, Facebook, Twitter, Ghost, Mail, Phone } from 'lucide-react';
+import { Instagram, Facebook, Twitter, Ghost, Mail, Phone, Package } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-black py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Customer Care */}
           <div>
             <h3 className="text-sm tracking-widest uppercase mb-6 font-semibold">
@@ -28,6 +29,32 @@ export default function Footer() {
                   <Phone className="w-5 h-5 flex-shrink-0" />
                   <span>+234 123 456 7890</span>
                 </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-sm tracking-widest uppercase mb-6 font-semibold">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  to="/track-order"
+                  className="flex items-center gap-3 text-sm tracking-wider hover:opacity-60 transition-opacity"
+                >
+                  <Package className="w-5 h-5 flex-shrink-0" />
+                  <span>Track Your Order</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/products"
+                  className="text-sm tracking-wider hover:opacity-60 transition-opacity"
+                >
+                  Shop All Products
+                </Link>
               </li>
             </ul>
           </div>
