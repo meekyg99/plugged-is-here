@@ -67,6 +67,28 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const parseSizeList = (value?: string) =>
+    (value || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  const setVariantSizes = (index: number, sizes: string[]) => {
+    const uniqueSizes = Array.from(new Set(sizes.map((s) => s.trim()).filter(Boolean)));
+    updateVariant(index, 'size', uniqueSizes.join(', '));
+  };
+
+  const toggleSizeSelection = (index: number, size: string) => {
+    const current = parseSizeList(formData.variants[index]?.size);
+    const exists = current.includes(size);
+    const next = exists ? current.filter((s) => s !== size) : [...current, size];
+    setVariantSizes(index, next);
+  };
+
+  const handleCustomSizesChange = (index: number, value: string) => {
+    setVariantSizes(index, parseSizeList(value));
+  };
+
   useEffect(() => {
     fetchCategories();
     if (productId) {
@@ -173,10 +195,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
     setFormData({ ...formData, variants: newVariants });
   };
 
-  const applySizePreset = (index: number, size: string) => {
-    updateVariant(index, 'size', size);
-  };
-
   const removeVariant = (index: number) => {
     setFormData({
       ...formData,
@@ -210,6 +228,7 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
+    const skuSet = new Set<string>();
 
     if (!formData.name.trim()) newErrors.name = 'Product name is required';
     if (!formData.slug.trim()) newErrors.slug = 'Product slug is required';
@@ -217,10 +236,27 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
     if (formData.variants.length === 0) newErrors.variants = 'At least one variant is required';
 
     formData.variants.forEach((variant, index) => {
-      if (!variant.sku.trim()) newErrors[`variant_${index}_sku`] = 'SKU is required';
+      const sku = variant.sku.trim();
+      if (!sku) newErrors[`variant_${index}_sku`] = 'SKU is required';
+      if (sku) {
+        if (skuSet.has(sku)) {
+          newErrors[`variant_${index}_sku`] = 'SKU must be unique per product';
+        } else {
+          skuSet.add(sku);
+        }
+      }
+
       const price = typeof variant.price === 'number' ? variant.price : Number(variant.price);
       if (!price || !Number.isFinite(price) || price <= 0) {
         newErrors[`variant_${index}_price`] = 'Price must be greater than 0';
+      }
+
+      const stock =
+        typeof variant.stock_quantity === 'number'
+          ? variant.stock_quantity
+          : Number(variant.stock_quantity);
+      if (stock === undefined || stock === null || Number.isNaN(stock) || stock < 0) {
+        newErrors[`variant_${index}_stock_quantity`] = 'Stock quantity must be 0 or more';
       }
     });
 
@@ -245,7 +281,17 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error saving product:', error);
-      setErrors({ submit: 'Failed to save product. Please try again.' });
+      const code = (error as any)?.code || '';
+      const message = (error as any)?.message || 'Failed to save product. Please try again.';
+      const details = (error as any)?.details || '';
+
+      if (code === '23505' || message.includes('duplicate key value') || details.includes('sku')) {
+        setErrors({ submit: 'Duplicate SKU detected. Please ensure each variant SKU is unique.' });
+      } else if (code === '23502' || message.includes('null value') || details.includes('stock_quantity')) {
+        setErrors({ submit: 'Stock quantity is required for each variant.' });
+      } else {
+        setErrors({ submit: message });
+      }
     } finally {
       setLoading(false);
     }
@@ -275,7 +321,24 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
         .insert(
           formData.variants.map((v) => ({
             product_id: product.id,
-            ...v,
+            sku: v.sku.trim(),
+            size: v.size?.trim() || null,
+            color: v.color?.trim() || null,
+            color_hex: v.color_hex || null,
+            material: v.material?.trim() || null,
+            price: Number(v.price),
+            compare_at_price:
+              v.compare_at_price === undefined || v.compare_at_price === null
+                ? null
+                : Number(v.compare_at_price),
+            stock_quantity:
+              v.stock_quantity === undefined || v.stock_quantity === null
+                ? 0
+                : Number(v.stock_quantity),
+            low_stock_threshold:
+              v.low_stock_threshold === undefined || v.low_stock_threshold === null
+                ? 5
+                : Number(v.low_stock_threshold),
           }))
         );
 
@@ -490,40 +553,47 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase text-gray-600 mb-1">Size (Clothing or EU Shoe)</label>
-                    <input
-                      type="text"
-                      value={variant.size || ''}
-                      onChange={(e) => updateVariant(index, 'size', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                      placeholder="S, M, L, XL or EU 42"
-                    />
-                    <div className="mt-2 space-y-2">
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Sizes (select one or many)</label>
+                    <div className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {CLOTHING_SIZES.map((size) => (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={() => applySizePreset(index, size)}
-                            className={`px-2 py-1 border text-xs uppercase tracking-wider ${variant.size === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}
-                          >
-                            {size}
-                          </button>
-                        ))}
+                        {CLOTHING_SIZES.map((size) => {
+                          const selected = parseSizeList(variant.size).includes(size);
+                          return (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => toggleSizeSelection(index, size)}
+                              className={`px-2 py-1 border text-xs uppercase tracking-wider ${selected ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}
+                            >
+                              {size}
+                            </button>
+                          );
+                        })}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {SHOE_SIZES_EU.map((size) => (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={() => applySizePreset(index, size)}
-                            className={`px-2 py-1 border text-xs uppercase tracking-wider ${variant.size === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}
-                          >
-                            {size}
-                          </button>
-                        ))}
+                        {SHOE_SIZES_EU.map((size) => {
+                          const selected = parseSizeList(variant.size).includes(size);
+                          return (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => toggleSizeSelection(index, size)}
+                              className={`px-2 py-1 border text-xs uppercase tracking-wider ${selected ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}
+                            >
+                              {size}
+                            </button>
+                          );
+                        })}
                       </div>
-                      <p className="text-[11px] text-gray-500">Accessories: leave size blank.</p>
+
+                      <input
+                        type="text"
+                        value={variant.size || ''}
+                        onChange={(e) => handleCustomSizesChange(index, e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
+                        placeholder="Custom sizes (comma separated) or leave blank for accessories"
+                      />
+                      <p className="text-[11px] text-gray-500">Click to select multiple sizes; custom sizes can be typed, separated by commas.</p>
                     </div>
                   </div>
 
@@ -593,6 +663,9 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
                       className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
                       placeholder="10"
                     />
+                    {errors[`variant_${index}_stock_quantity`] && (
+                      <p className="text-red-600 text-xs mt-1">{errors[`variant_${index}_stock_quantity`]}</p>
+                    )}
                   </div>
                 </div>
               </div>
