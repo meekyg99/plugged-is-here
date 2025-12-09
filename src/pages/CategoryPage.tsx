@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { ShoppingCart, Eye, Heart, Star } from 'lucide-react';
+import { ShoppingCart, Eye, Heart } from 'lucide-react';
 import QuickView from '../components/QuickView';
 import { ProductWithDetails } from '../types/database';
 import { productService } from '../services/productService';
@@ -12,8 +12,6 @@ interface ProductDisplay {
   name: string;
   category: string;
   price: string;
-  rating: number;
-  reviewCount: number;
   images: string[];
   colors: { name: string; hex: string }[];
   defaultVariantId: string;
@@ -24,9 +22,7 @@ export default function CategoryPage() {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<ProductDisplay[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<ProductDisplay | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
@@ -50,9 +46,11 @@ export default function CategoryPage() {
 
       const gender = searchParams.get('gender');
       if (gender) {
-        filtered = filtered.filter((p: ProductWithDetails) =>
-          p.gender?.toLowerCase() === gender.toLowerCase()
-        );
+        filtered = filtered.filter((p: ProductWithDetails) => {
+          const g = p.gender?.toLowerCase();
+          const target = gender.toLowerCase();
+          return g === target || g === 'unisex';
+        });
       }
 
       const displayProducts: ProductDisplay[] = filtered.map((product: ProductWithDetails) => {
@@ -73,8 +71,6 @@ export default function CategoryPage() {
           price: minPrice === maxPrice
             ? `₦${minPrice.toLocaleString()}`
             : `₦${minPrice.toLocaleString()} - ₦${maxPrice.toLocaleString()}`,
-          rating: 4.5,
-          reviewCount: Math.floor(Math.random() * 50) + 10,
           images: product.images.sort((a, b) => a.display_order - b.display_order).map(img => img.image_url),
           colors: uniqueColors,
           defaultVariantId: product.variants[0]?.id || '',
@@ -87,13 +83,6 @@ export default function CategoryPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleImageSwitch = (productId: string) => {
-    setCurrentImageIndex((prev) => ({
-      ...prev,
-      [productId]: prev[productId] === 1 ? 0 : 1,
-    }));
   };
 
   const toggleWishlist = async (productId: string) => {
@@ -134,47 +123,24 @@ export default function CategoryPage() {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="group cursor-pointer transition-all duration-700"
-                onMouseEnter={() => setHoveredProduct(product.id)}
-                onMouseLeave={() => setHoveredProduct(null)}
+                className="group cursor-default transition-all duration-700"
               >
                 <div
-                  className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-500"
-                  onMouseEnter={() => handleImageSwitch(product.id)}
-                  onMouseLeave={() => handleImageSwitch(product.id)}
+                  className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
                 >
                   <img
-                    src={product.images[currentImageIndex[product.id] || 0]}
+                    src={product.images[0]}
                     alt={product.name}
-                    className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
-                      hoveredProduct === product.id ? 'scale-110' : 'scale-100'
-                    }`}
+                    className="absolute inset-0 w-full h-full object-contain bg-white"
                   />
 
-                  <div className="absolute top-3 right-3 flex gap-1">
-                    {product.images.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={`w-1.5 h-1.5 rounded-full transition-all ${
-                          (currentImageIndex[product.id] || 0) === idx
-                            ? 'bg-white w-4'
-                            : 'bg-white bg-opacity-50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <div
-                    className={`absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center space-x-3 transition-opacity duration-300 ${
-                      hoveredProduct === product.id ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  >
+                  <div className="absolute inset-0 flex items-center justify-center space-x-3 bg-black bg-opacity-20">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setQuickViewProduct(product);
                       }}
-                      className="p-2 bg-white hover:bg-gray-100 rounded-2xl transition-all duration-300 transform hover:scale-110"
+                      className="p-2 bg-white rounded-2xl"
                     >
                       <Eye className="w-5 h-5" />
                     </button>
@@ -183,10 +149,10 @@ export default function CategoryPage() {
                         e.stopPropagation();
                         toggleWishlist(product.id);
                       }}
-                      className="p-2 bg-white hover:bg-gray-100 rounded-2xl transition-all duration-300 transform hover:scale-110"
+                      className="p-2 bg-white rounded-2xl"
                     >
                       <Heart
-                        className={`w-5 h-5 transition-all ${
+                        className={`w-5 h-5 ${
                           isInWishlist(product.id) ? 'fill-black' : 'fill-none'
                         }`}
                       />
@@ -200,42 +166,17 @@ export default function CategoryPage() {
                   </p>
                   <h3 className="text-sm tracking-wider uppercase">{product.name}</h3>
 
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 ${
-                            i < Math.floor(product.rating)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : i < product.rating
-                              ? 'fill-yellow-400 text-yellow-400 opacity-50'
-                              : 'fill-none text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-gray-500">
-                      {product.rating} ({product.reviewCount})
-                    </span>
-                  </div>
-
                   <p className="text-sm font-light">{product.price}</p>
 
-                  <div className="flex gap-1.5 pt-1">
-                    {product.colors.slice(0, 3).map((color, idx) => (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {product.colors.map((color, idx) => (
                       <div
                         key={idx}
-                        className="w-5 h-5 rounded-full border-2 border-gray-300 hover:border-black transition-colors cursor-pointer"
-                        style={{ backgroundColor: color.hex }}
+                        className="w-5 h-5 rounded-full border border-gray-200"
+                        style={{ backgroundColor: color.hex || '#e5e7eb' }}
                         title={color.name}
                       />
                     ))}
-                    {product.colors.length > 3 && (
-                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs text-gray-500">
-                        +{product.colors.length - 3}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -246,7 +187,7 @@ export default function CategoryPage() {
                       addItem(product.defaultVariantId, product.id);
                     }
                   }}
-                  className="mt-4 w-full py-2 bg-black text-white transition-all duration-300 flex items-center justify-center space-x-2 hover:bg-gray-800 shadow-md hover:shadow-lg hover:scale-105"
+                  className="mt-4 w-full py-2 bg-black text-white flex items-center justify-center space-x-2"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   <span className="text-xs tracking-wider uppercase">Add to Cart</span>

@@ -143,7 +143,7 @@ export default function Hero() {
                   )}
                   {heroMain?.cta_text && (
                     <Link
-                      to={heroMain.cta_url || '/category/all'}
+                      to={heroMain.cta_url || '/products'}
                       className={`mt-8 inline-block px-12 py-3 bg-black text-white text-sm tracking-widest uppercase hover:bg-gray-800 transition-all duration-500 delay-600 shadow-lg hover:shadow-2xl hover:scale-105 ${
                         isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                       }`}

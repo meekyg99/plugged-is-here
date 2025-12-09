@@ -62,7 +62,7 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                 <img
                   src={product.images[currentImageIndex]}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-white"
                 />
                 <button className="absolute bottom-6 right-6 p-2 bg-white hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg">
                   <ZoomIn className="w-5 h-5" />

@@ -164,14 +164,14 @@ export default function ProductGrid() {
               }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div
-                className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
-              >
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
+                <div
+                  className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
+                >
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-contain bg-white"
+                  />
 
                 <div className="absolute top-3 right-3 flex gap-1">
                   {product.images.map((_, idx) => (
