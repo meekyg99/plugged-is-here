@@ -102,6 +102,10 @@ export default function CategoriesPage() {
       { name: 'Kaftan', slug: 'kaftan', gender: 'unisex', description: 'Elegant flowing garments' },
       { name: 'Accessories', slug: 'accessories', gender: 'unisex', description: 'Jewelry, bags, and more' },
       { name: 'Aso Oke', slug: 'aso-oke', gender: 'unisex', description: 'Hand-woven traditional fabric' },
+      { name: 'Sport', slug: 'sport', gender: 'unisex', description: 'Athletic-inspired fashion and gear' },
+      { name: 'Jersey', slug: 'jersey', gender: 'unisex', description: 'Sport jerseys and tops' },
+      { name: 'Shorts', slug: 'shorts', gender: 'unisex', description: 'Athletic shorts' },
+      { name: 'Slides', slug: 'slides', gender: 'unisex', description: 'Sport slides and sandals' },
     ];
 
     try {

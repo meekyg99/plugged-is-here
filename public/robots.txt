@@ -13,4 +13,4 @@ Disallow: /admin/*
 Disallow: /errors/
 
 # Allow sitemap
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://pluggedby212.shop/sitemap.xml

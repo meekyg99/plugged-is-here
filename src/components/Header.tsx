@@ -17,11 +17,13 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
   const [searchOpen, setSearchOpen] = useState(false);
   const { items: wishlistItems } = useWishlist();
   const [collectionsOpen, setCollectionsOpen] = useState(false);
+  const [sportOpen, setSportOpen] = useState(false);
   const [menOpen, setMenOpen] = useState(false);
   const [womenOpen, setWomenOpen] = useState(false);
   const [mobileMenOpen, setMobileMenOpen] = useState(false);
   const [mobileWomenOpen, setMobileWomenOpen] = useState(false);
   const [mobileCollectionsOpen, setMobileCollectionsOpen] = useState(false);
+  const [mobileSportOpen, setMobileSportOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -51,11 +53,12 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
             </button>
 
             <nav className="hidden lg:flex items-center space-x-8">
-              <Link
-                to="/products"
-                className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity"
-              >
-                New Arrivals
+              <Link to="/" className="flex items-center">
+                <img
+                  src="https://res.cloudinary.com/darhndmms/image/upload/v1765207904/WhatsApp_Image_2025-10-28_at_11.51.32_0752b31a_-_Copy_ivmyz2.jpg"
+                  alt="Plugged logo"
+                  className="h-10 w-auto"
+                />
               </Link>
               <div
                 className="relative"
@@ -89,6 +92,23 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                     <Link to="/category/accessories?gender=women" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Accessories</Link>
                     <Link to="/category/shoes?gender=women" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Shoes</Link>
                     <Link to="/category/clothes?gender=women" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Clothes</Link>
+                  </div>
+                )}
+              </div>
+              <div
+                className="relative"
+                onMouseEnter={() => setSportOpen(true)}
+                onMouseLeave={() => setSportOpen(false)}
+              >
+                <button className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1">
+                  <span>Sport</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                {sportOpen && (
+                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2">
+                    <Link to="/category/jersey" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Jersey</Link>
+                    <Link to="/category/shorts" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Shorts</Link>
+                    <Link to="/category/slides" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Slides</Link>
                   </div>
                 )}
               </div>
@@ -172,7 +192,13 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
 
       <div className={`fixed inset-0 bg-white z-40 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <nav className="flex flex-col pt-24 px-8 space-y-6 pb-8">
-          <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity">New Arrivals</Link>
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} className="inline-flex w-fit">
+            <img
+              src="https://res.cloudinary.com/darhndmms/image/upload/v1765207904/WhatsApp_Image_2025-10-28_at_11.51.32_0752b31a_-_Copy_ivmyz2.jpg"
+              alt="Plugged logo"
+              className="h-12 w-auto"
+            />
+          </Link>
 
           <div>
             <button onClick={() => setMobileMenOpen(!mobileMenOpen)} className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center justify-between w-full">
@@ -211,6 +237,20 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
             {mobileCollectionsOpen && (
               <div className="space-y-3 mt-3">
                 <Link to="/category/accessories" onClick={() => setMobileMenuOpen(false)} className="text-base tracking-wider uppercase hover:opacity-60 transition-opacity block pl-4">Accessories</Link>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <button onClick={() => setMobileSportOpen(!mobileSportOpen)} className="text-xl tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center justify-between w-full">
+              <span>Sport</span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${mobileSportOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {mobileSportOpen && (
+              <div className="space-y-3 mt-3">
+                <Link to="/category/jersey" onClick={() => setMobileMenuOpen(false)} className="text-base tracking-wider uppercase hover:opacity-60 transition-opacity block pl-4">Jersey</Link>
+                <Link to="/category/shorts" onClick={() => setMobileMenuOpen(false)} className="text-base tracking-wider uppercase hover:opacity-60 transition-opacity block pl-4">Shorts</Link>
+                <Link to="/category/slides" onClick={() => setMobileMenuOpen(false)} className="text-base tracking-wider uppercase hover:opacity-60 transition-opacity block pl-4">Slides</Link>
               </div>
             )}
           </div>

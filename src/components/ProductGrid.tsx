@@ -14,6 +14,7 @@ interface ProductDisplay {
   price: string;
   images: string[];
   colors: { name: string; hex: string }[];
+  sizes: string[];
   defaultVariantId: string;
 }
 
@@ -54,6 +55,13 @@ export default function ProductGrid() {
             return acc;
           }, []);
 
+          const uniqueSizes = product.variants.reduce((acc: string[], variant) => {
+            if (variant.size && !acc.includes(variant.size)) {
+              acc.push(variant.size);
+            }
+            return acc;
+          }, []);
+
           const validPrices = product.variants.map(v => v.price).filter(p => p > 0);
           const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
           const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 0;
@@ -69,6 +77,7 @@ export default function ProductGrid() {
               : `₦${minPrice.toLocaleString()} - ₦${maxPrice.toLocaleString()}`,
             images: sortedImages.map(img => img.image_url),
             colors: uniqueColors,
+            sizes: uniqueSizes,
             defaultVariantId: product.variants[0]?.id || '',
           };
         });

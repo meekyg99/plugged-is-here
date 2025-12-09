@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { Plus, X, Upload, Package } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
+const CLOTHING_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const SHOE_SIZES_EU = ['EU 38', 'EU 39', 'EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44', 'EU 45', 'EU 46', 'EU 47'];
+
 interface Category {
   id: string;
   name: string;
@@ -168,6 +171,10 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
     const newVariants = [...formData.variants];
     newVariants[index] = { ...newVariants[index], [field]: value };
     setFormData({ ...formData, variants: newVariants });
+  };
+
+  const applySizePreset = (index: number, size: string) => {
+    updateVariant(index, 'size', size);
   };
 
   const removeVariant = (index: number) => {
@@ -483,14 +490,41 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase text-gray-600 mb-1">Size</label>
+                    <label className="block text-xs uppercase text-gray-600 mb-1">Size (Clothing or EU Shoe)</label>
                     <input
                       type="text"
-                      value={variant.size}
+                      value={variant.size || ''}
                       onChange={(e) => updateVariant(index, 'size', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
-                      placeholder="M, L, XL"
+                      placeholder="S, M, L, XL or EU 42"
                     />
+                    <div className="mt-2 space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {CLOTHING_SIZES.map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => applySizePreset(index, size)}
+                            className={`px-2 py-1 border text-xs uppercase tracking-wider ${variant.size === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {SHOE_SIZES_EU.map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => applySizePreset(index, size)}
+                            className={`px-2 py-1 border text-xs uppercase tracking-wider ${variant.size === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-gray-500">Accessories: leave size blank.</p>
+                    </div>
                   </div>
 
                   <div>

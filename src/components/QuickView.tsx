@@ -13,6 +13,7 @@ interface QuickViewProps {
     category: string;
     images: string[];
     colors: { name: string; hex: string }[];
+    sizes?: string[];
     defaultVariantId: string;
   };
 }
@@ -129,13 +130,25 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                     ))}
                   </div>
                 </div>
-              </div>
 
-              <p className="text-sm leading-relaxed text-gray-600 mb-8">
-                Crafted with premium materials and exceptional attention to
-                detail. This piece represents the pinnacle of luxury fashion,
-                combining timeless design with contemporary aesthetics.
-              </p>
+                {product.sizes && product.sizes.length > 0 && (
+                  <div>
+                    <label className="block text-xs tracking-wider uppercase mb-3 font-semibold">
+                      Sizes
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {product.sizes.map((size) => (
+                        <span
+                          key={size}
+                          className="px-3 py-1 border border-gray-300 text-xs tracking-wider uppercase bg-white"
+                        >
+                          {size}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ShoppingCart, Eye, Heart } from 'lucide-react';
 import QuickView from '../components/QuickView';
@@ -6,6 +6,7 @@ import { ProductWithDetails } from '../types/database';
 import { productService } from '../services/productService';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { Seo } from '../components/Seo';
 
 interface ProductDisplay {
   id: string;
@@ -14,6 +15,7 @@ interface ProductDisplay {
   price: string;
   images: string[];
   colors: { name: string; hex: string }[];
+   sizes: string[];
   defaultVariantId: string;
 }
 
@@ -25,6 +27,9 @@ export default function CategoryPage() {
   const [quickViewProduct, setQuickViewProduct] = useState<ProductDisplay | null>(null);
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
+  const DEFAULT_OG_IMAGE =
+    'https://res.cloudinary.com/darhndmms/image/upload/v1765207904/WhatsApp_Image_2025-10-28_at_11.51.32_0752b31a_-_Copy_ivmyz2.jpg';
 
   useEffect(() => {
     loadProducts();
@@ -61,6 +66,13 @@ export default function CategoryPage() {
           return acc;
         }, []);
 
+        const uniqueSizes = product.variants.reduce((acc: string[], variant) => {
+          if (variant.size && !acc.includes(variant.size)) {
+            acc.push(variant.size);
+          }
+          return acc;
+        }, []);
+
         const minPrice = Math.min(...product.variants.map(v => v.price));
         const maxPrice = Math.max(...product.variants.map(v => v.price));
 
@@ -73,6 +85,7 @@ export default function CategoryPage() {
             : `₦${minPrice.toLocaleString()} - ₦${maxPrice.toLocaleString()}`,
           images: product.images.sort((a, b) => a.display_order - b.display_order).map(img => img.image_url),
           colors: uniqueColors,
+          sizes: uniqueSizes,
           defaultVariantId: product.variants[0]?.id || '',
         };
       });
@@ -98,8 +111,26 @@ export default function CategoryPage() {
     return category.charAt(0).toUpperCase() + category.slice(1);
   };
 
+  const genderLabel = searchParams.get('gender')
+    ? ` for ${searchParams.get('gender')}`
+    : '';
+
+  const pageTitle = useMemo(
+    () => `${getCategoryTitle()}${genderLabel} | Plugged`,
+    [category, genderLabel]
+  );
+
+  const pageDescription = useMemo(() => {
+    const base = getCategoryTitle();
+    if (genderLabel) return `${base}${genderLabel} — curated looks, shoes, and accessories.`;
+    return `${base} — curated Nigerian fashion across clothes, shoes, and accessories.`;
+  }, [category, genderLabel]);
+
+  const ogImage = products[0]?.images[0] || DEFAULT_OG_IMAGE;
+
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50 pt-24">
+      <Seo title={pageTitle} description={pageDescription} image={ogImage} />
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl font-light tracking-[0.2em] uppercase mb-4">
