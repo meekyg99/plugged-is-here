@@ -156,8 +156,8 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           size: '',
           color: '',
           color_hex: '#000000',
-          price: 0,
-          stock_quantity: 0,
+          price: undefined as unknown as number,
+          stock_quantity: undefined as unknown as number,
           low_stock_threshold: 5,
         },
       ],
@@ -211,7 +211,10 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
 
     formData.variants.forEach((variant, index) => {
       if (!variant.sku.trim()) newErrors[`variant_${index}_sku`] = 'SKU is required';
-      if (variant.price <= 0) newErrors[`variant_${index}_price`] = 'Price must be greater than 0';
+      const price = typeof variant.price === 'number' ? variant.price : Number(variant.price);
+      if (!price || !Number.isFinite(price) || price <= 0) {
+        newErrors[`variant_${index}_price`] = 'Price must be greater than 0';
+      }
     });
 
     setErrors(newErrors);
@@ -514,8 +517,14 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
                     <label className="block text-xs uppercase text-gray-600 mb-1">Price (₦) *</label>
                     <input
                       type="number"
-                      value={variant.price}
-                      onChange={(e) => updateVariant(index, 'price', parseFloat(e.target.value))}
+                      value={variant.price ?? ''}
+                      onChange={(e) =>
+                        updateVariant(
+                          index,
+                          'price',
+                          e.target.value === '' ? undefined : parseFloat(e.target.value)
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
                       placeholder="25000"
                     />
@@ -539,8 +548,14 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
                     <label className="block text-xs uppercase text-gray-600 mb-1">Stock Quantity *</label>
                     <input
                       type="number"
-                      value={variant.stock_quantity}
-                      onChange={(e) => updateVariant(index, 'stock_quantity', parseInt(e.target.value))}
+                      value={variant.stock_quantity ?? ''}
+                      onChange={(e) =>
+                        updateVariant(
+                          index,
+                          'stock_quantity',
+                          e.target.value === '' ? undefined : parseInt(e.target.value)
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black"
                       placeholder="10"
                     />

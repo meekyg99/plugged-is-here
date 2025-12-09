@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Heart, ShoppingBag, Share2, ZoomIn, Star } from 'lucide-react';
+import { X, Heart, ShoppingBag, Share2, ZoomIn } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 
@@ -11,8 +11,6 @@ interface QuickViewProps {
     name: string;
     price: string;
     category: string;
-    rating: number;
-    reviewCount: number;
     images: string[];
     colors: { name: string; hex: string }[];
     defaultVariantId: string;
@@ -101,26 +99,6 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
               <h2 className="text-3xl tracking-wider uppercase mb-4">
                 {product.name}
               </h2>
-
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-4 h-4 ${
-                        i < Math.floor(product.rating)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : i < product.rating
-                          ? 'fill-yellow-400 text-yellow-400 opacity-50'
-                          : 'fill-none text-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600">
-                  {product.rating} ({product.reviewCount} reviews)
-                </span>
-              </div>
 
               <p className="text-2xl font-light mb-8">{product.price}</p>
 

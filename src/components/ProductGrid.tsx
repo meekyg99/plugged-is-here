@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Eye, Heart, Star } from 'lucide-react';
+import { ShoppingCart, Eye, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import QuickView from './QuickView';
 import { ProductWithDetails } from '../types/database';
@@ -12,8 +12,6 @@ interface ProductDisplay {
   name: string;
   category: string;
   price: string;
-  rating: number;
-  reviewCount: number;
   images: string[];
   colors: { name: string; hex: string }[];
   defaultVariantId: string;
@@ -69,8 +67,6 @@ export default function ProductGrid() {
             price: minPrice === maxPrice
               ? `₦${minPrice.toLocaleString()}`
               : `₦${minPrice.toLocaleString()} - ₦${maxPrice.toLocaleString()}`,
-            rating: 4.5,
-            reviewCount: Math.floor(Math.random() * 50) + 10,
             images: sortedImages.map(img => img.image_url),
             colors: uniqueColors,
             defaultVariantId: product.variants[0]?.id || '',
@@ -224,26 +220,6 @@ export default function ProductGrid() {
                 <h3 className="text-sm tracking-wider uppercase">
                   {product.name}
                 </h3>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3 h-3 ${
-                          i < Math.floor(product.rating)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : i < product.rating
-                            ? 'fill-yellow-400 text-yellow-400 opacity-50'
-                            : 'fill-none text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    {product.rating} ({product.reviewCount})
-                  </span>
-                </div>
 
                 <p className="text-sm font-light">{product.price}</p>
 
