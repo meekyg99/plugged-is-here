@@ -32,14 +32,47 @@ export default function Hero() {
   const [heroMain, setHeroMain] = useState<HeroBanner | null>(null);
   const [categoryBanners, setCategoryBanners] = useState<CategoryBanner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fallbackProductImages, setFallbackProductImages] = useState<{ men?: string; women?: string; accessories?: string; hero?: string }>({});
 
   useEffect(() => {
     setIsLoaded(true);
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
     fetchHeroContent();
+    fetchFallbackImages();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const fetchFallbackImages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`id, gender, category:categories(name), images:product_images(image_url, display_order)`) // assuming RLS allows
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) {
+        console.error('Error loading fallback product images:', error);
+        return;
+      }
+
+      const heroCandidate = data?.find((p) => p.images && p.images.length > 0);
+      const menCandidate = data?.find((p) => (p.gender === 'men' || p.gender === 'unisex') && p.images?.length);
+      const womenCandidate = data?.find((p) => (p.gender === 'women' || p.gender === 'unisex') && p.images?.length);
+      const accessoriesCandidate = data?.find((p) => p.category?.name?.toLowerCase() === 'accessories' && p.images?.length);
+
+      const firstImage = (item?: any) => item?.images?.sort((a: any, b: any) => a.display_order - b.display_order)[0]?.image_url;
+
+      setFallbackProductImages({
+        hero: firstImage(heroCandidate),
+        men: firstImage(menCandidate),
+        women: firstImage(womenCandidate),
+        accessories: firstImage(accessoriesCandidate),
+      });
+    } catch (err) {
+      console.error('Unexpected error loading fallback images:', err);
+    }
+  };
 
   const fetchHeroContent = async () => {
     try {
@@ -74,7 +107,13 @@ export default function Hero() {
 
   const getBackgroundStyle = () => {
     if (!heroMain) {
-      return { background: 'linear-gradient(to bottom right, #fef3c7, #fed7aa, #fecdd3)' };
+      return fallbackProductImages.hero
+        ? {
+            backgroundImage: `url(${fallbackProductImages.hero})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }
+        : { background: 'linear-gradient(to bottom right, #fef3c7, #fed7aa, #fecdd3)' };
     }
 
     if (heroMain.background_type === 'image' && heroMain.image_url) {
@@ -127,7 +166,7 @@ export default function Hero() {
                       opacity: 1 - scrollY * 0.002,
                     }}
                   >
-                    {heroMain?.title || 'Spring Summer'}
+                    {heroMain?.title || 'Summer 2025'}
                   </h1>
                   {heroMain?.subtitle && (
                     <p
@@ -138,7 +177,7 @@ export default function Hero() {
                         opacity: 1 - scrollY * 0.003,
                       }}
                     >
-                      {heroMain.subtitle}
+                      {heroMain.subtitle || 'New season, new silhouettes'}
                     </p>
                   )}
                   {heroMain?.cta_text && (
@@ -163,21 +202,21 @@ export default function Hero() {
 
       {/* Featured Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-3" data-categories-section>
-        {menBanner && (
+        {(menBanner || fallbackProductImages.men) && (
           <div className="relative h-[60vh] lg:h-[80vh] overflow-hidden group">
             <img
-              src={menBanner.image_url}
-              alt={menBanner.title}
+              src={menBanner?.image_url || fallbackProductImages.men || ''}
+              alt={menBanner?.title || 'Men'}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-30 transition-all duration-500"></div>
             <div className="absolute inset-0 flex items-center justify-center text-white">
               <div className="text-center px-4 transform transition-all duration-500 group-hover:-translate-y-2">
                 <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
-                  {menBanner.title}
+                  {menBanner?.title || 'Men'}
                 </h2>
                 <Link
-                  to={menBanner.link_url || '/category/all?gender=men'}
+                  to={menBanner?.link_url || '/category/all?gender=men'}
                   className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
                 >
                   Explore
@@ -187,21 +226,21 @@ export default function Hero() {
           </div>
         )}
 
-        {womenBanner && (
+        {(womenBanner || fallbackProductImages.women) && (
           <div className="relative h-[60vh] lg:h-[80vh] overflow-hidden group">
             <img
-              src={womenBanner.image_url}
-              alt={womenBanner.title}
+              src={womenBanner?.image_url || fallbackProductImages.women || ''}
+              alt={womenBanner?.title || 'Women'}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-30 transition-all duration-500"></div>
             <div className="absolute inset-0 flex items-center justify-center text-white">
               <div className="text-center px-4 transform transition-all duration-500 group-hover:-translate-y-2">
                 <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
-                  {womenBanner.title}
+                  {womenBanner?.title || 'Women'}
                 </h2>
                 <Link
-                  to={womenBanner.link_url || '/category/all?gender=women'}
+                  to={womenBanner?.link_url || '/category/all?gender=women'}
                   className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
                 >
                   Explore
@@ -211,21 +250,21 @@ export default function Hero() {
           </div>
         )}
 
-        {accessoriesBanner && (
+        {(accessoriesBanner || fallbackProductImages.accessories) && (
           <div className="relative h-[60vh] lg:h-[80vh] overflow-hidden group">
             <img
-              src={accessoriesBanner.image_url}
-              alt={accessoriesBanner.title}
+              src={accessoriesBanner?.image_url || fallbackProductImages.accessories || ''}
+              alt={accessoriesBanner?.title || 'Accessories'}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-30 transition-all duration-500"></div>
             <div className="absolute inset-0 flex items-center justify-center text-white">
               <div className="text-center px-4 transform transition-all duration-500 group-hover:-translate-y-2">
                 <h2 className="text-3xl sm:text-4xl font-light tracking-[0.2em] uppercase mb-6">
-                  {accessoriesBanner.title}
+                  {accessoriesBanner?.title || 'Accessories'}
                 </h2>
                 <Link
-                  to={accessoriesBanner.link_url || '/category/accessories'}
+                  to={accessoriesBanner?.link_url || '/category/accessories'}
                   className="inline-block bg-white text-black px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-2xl"
                 >
                   Explore

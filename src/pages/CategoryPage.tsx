@@ -60,8 +60,12 @@ export default function CategoryPage() {
 
       const displayProducts: ProductDisplay[] = filtered.map((product: ProductWithDetails) => {
         const uniqueColors = product.variants.reduce((acc: { name: string; hex: string }[], variant) => {
-          if (variant.color && variant.color_hex && !acc.find(c => c.name === variant.color)) {
-            acc.push({ name: variant.color, hex: variant.color_hex });
+          if (variant.color) {
+            const hex = variant.color_hex || (variant.color as string);
+            const key = variant.color.toLowerCase();
+            if (!acc.find((c) => c.name.toLowerCase() === key)) {
+              acc.push({ name: variant.color, hex });
+            }
           }
           return acc;
         }, []);
@@ -180,7 +184,7 @@ export default function CategoryPage() {
                       <div
                         key={idx}
                         className="w-5 h-5 rounded-full border border-gray-200"
-                        style={{ backgroundColor: color.hex || '#e5e7eb' }}
+                        style={{ backgroundColor: color.hex || color.name || '#e5e7eb' }}
                         title={color.name}
                       />
                     ))}
