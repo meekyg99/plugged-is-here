@@ -34,6 +34,11 @@ export default function Hero() {
   const [loading, setLoading] = useState(true);
   const [fallbackProductImages, setFallbackProductImages] = useState<{ men?: string; women?: string; accessories?: string; hero?: string }>({});
 
+  const heroImage = fallbackProductImages.hero || heroMain?.image_url;
+  const menImage = fallbackProductImages.men || categoryBanners.find((b) => b.position === 'men')?.image_url;
+  const womenImage = fallbackProductImages.women || categoryBanners.find((b) => b.position === 'women')?.image_url;
+  const accessoriesImage = fallbackProductImages.accessories || categoryBanners.find((b) => b.position === 'accessories')?.image_url;
+
   useEffect(() => {
     setIsLoaded(true);
     const handleScroll = () => setScrollY(window.scrollY);
@@ -106,19 +111,17 @@ export default function Hero() {
   };
 
   const getBackgroundStyle = () => {
-    if (!heroMain) {
-      return fallbackProductImages.hero
-        ? {
-            backgroundImage: `url(${fallbackProductImages.hero})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }
-        : { background: 'linear-gradient(to bottom right, #fef3c7, #fed7aa, #fecdd3)' };
+    if (!heroMain && heroImage) {
+      return {
+        backgroundImage: `url(${heroImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      };
     }
 
-    if (heroMain.background_type === 'image' && heroMain.image_url) {
+    if (heroImage) {
       return {
-        backgroundImage: `url(${heroMain.image_url})`,
+        backgroundImage: `url(${heroImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       };
@@ -133,6 +136,9 @@ export default function Hero() {
   const menBanner = categoryBanners.find(b => b.position === 'men');
   const womenBanner = categoryBanners.find(b => b.position === 'women');
   const accessoriesBanner = categoryBanners.find(b => b.position === 'accessories');
+
+  const heroTitle = (heroMain?.title || 'Spring Summer 2025 Collection').replace(/2024/g, '2025');
+  const heroSubtitle = (heroMain?.subtitle || 'New season, new silhouettes').replace(/2024/g, '2025');
 
   return (
     <section className="relative pt-16">
@@ -167,8 +173,10 @@ export default function Hero() {
                     }}
                   >
                     {heroMain?.title || 'Summer 2025'}
+                                      {heroTitle}
                   </h1>
                   {heroMain?.subtitle && (
+                                      {heroSubtitle}
                     <p
                       className={`text-xl sm:text-2xl tracking-[0.3em] uppercase transition-all duration-1500 delay-300 ${
                         isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
@@ -202,10 +210,10 @@ export default function Hero() {
 
       {/* Featured Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-3" data-categories-section>
-        {(menBanner || fallbackProductImages.men) && (
+        {(menBanner || menImage) && (
           <div className="relative h-[60vh] lg:h-[80vh] overflow-hidden group">
             <img
-              src={menBanner?.image_url || fallbackProductImages.men || ''}
+              src={menImage || ''}
               alt={menBanner?.title || 'Men'}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
@@ -226,10 +234,10 @@ export default function Hero() {
           </div>
         )}
 
-        {(womenBanner || fallbackProductImages.women) && (
+        {(womenBanner || womenImage) && (
           <div className="relative h-[60vh] lg:h-[80vh] overflow-hidden group">
             <img
-              src={womenBanner?.image_url || fallbackProductImages.women || ''}
+              src={womenImage || ''}
               alt={womenBanner?.title || 'Women'}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
@@ -250,10 +258,10 @@ export default function Hero() {
           </div>
         )}
 
-        {(accessoriesBanner || fallbackProductImages.accessories) && (
+        {(accessoriesBanner || accessoriesImage) && (
           <div className="relative h-[60vh] lg:h-[80vh] overflow-hidden group">
             <img
-              src={accessoriesBanner?.image_url || fallbackProductImages.accessories || ''}
+              src={accessoriesImage || ''}
               alt={accessoriesBanner?.title || 'Accessories'}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
