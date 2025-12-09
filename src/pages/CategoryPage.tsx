@@ -38,7 +38,7 @@ export default function CategoryPage() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const data = await productService.getFeaturedProducts();
+      const data = await productService.getAllProducts();
 
       let filtered = data;
 
