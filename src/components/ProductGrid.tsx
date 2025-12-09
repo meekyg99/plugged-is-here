@@ -23,10 +23,8 @@ export default function ProductGrid() {
   const [products, setProducts] = useState<ProductDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<ProductDisplay | null>(null);
   const [visibleProducts, setVisibleProducts] = useState<string[]>([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: string]: number }>({});
   const productRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -85,13 +83,6 @@ export default function ProductGrid() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleImageSwitch = (productId: string) => {
-    setCurrentImageIndex((prev) => ({
-      ...prev,
-      [productId]: prev[productId] === 1 ? 0 : 1,
-    }));
   };
 
   useEffect(() => {
@@ -170,53 +161,41 @@ export default function ProductGrid() {
             <div
               key={product.id}
               ref={(el) => (productRefs.current[index] = el)}
-              className={`group cursor-pointer transition-all duration-700 ${
+              className={`group cursor-default transition-all duration-700 ${
                 visibleProducts.includes(product.id)
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-10'
               }`}
               style={{ transitionDelay: `${index * 100}ms` }}
-              onMouseEnter={() => setHoveredProduct(product.id)}
-              onMouseLeave={() => setHoveredProduct(null)}
             >
               <div
-                className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-500"
-                onMouseEnter={() => handleImageSwitch(product.id)}
-                onMouseLeave={() => handleImageSwitch(product.id)}
+                className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
               >
                 <img
-                  src={product.images[currentImageIndex[product.id] || 0]}
+                  src={product.images[0]}
                   alt={product.name}
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
-                    hoveredProduct === product.id ? 'scale-110' : 'scale-100'
-                  }`}
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
 
                 <div className="absolute top-3 right-3 flex gap-1">
                   {product.images.map((_, idx) => (
                     <div
                       key={idx}
-                      className={`w-1.5 h-1.5 rounded-full transition-all ${
-                        (currentImageIndex[product.id] || 0) === idx
-                          ? 'bg-white w-4'
-                          : 'bg-white bg-opacity-50'
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        idx === 0 ? 'bg-white w-4' : 'bg-white bg-opacity-50'
                       }`}
                     />
                   ))}
                 </div>
 
-                {/* Overlay Actions */}
-                <div
-                  className={`absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center space-x-3 transition-opacity duration-300 ${
-                    hoveredProduct === product.id ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
+                {/* Overlay Actions - always visible, no hover dependency */}
+                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center space-x-3 opacity-100">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setQuickViewProduct(product);
                     }}
-                    className="p-2 bg-white hover:bg-gray-100 rounded-2xl transition-all duration-300 transform hover:scale-110"
+                    className="p-2 bg-white rounded-2xl"
                   >
                     <Eye className="w-5 h-5" />
                   </button>
@@ -225,10 +204,10 @@ export default function ProductGrid() {
                       e.stopPropagation();
                       toggleWishlist(product.id);
                     }}
-                    className="p-2 bg-white hover:bg-gray-100 rounded-2xl transition-all duration-300 transform hover:scale-110"
+                    className="p-2 bg-white rounded-2xl"
                   >
                     <Heart
-                      className={`w-5 h-5 transition-all ${
+                      className={`w-5 h-5 ${
                         isInWishlist(product.id)
                           ? 'fill-black'
                           : 'fill-none'
@@ -268,20 +247,15 @@ export default function ProductGrid() {
 
                 <p className="text-sm font-light">{product.price}</p>
 
-                <div className="flex gap-1.5 pt-1">
-                  {product.colors.slice(0, 3).map((color, idx) => (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {product.colors.map((color, idx) => (
                     <div
                       key={idx}
-                      className="w-5 h-5 rounded-full border-2 border-gray-300 hover:border-black transition-colors cursor-pointer"
-                      style={{ backgroundColor: color.hex }}
+                      className="w-5 h-5 rounded-full border border-gray-200"
+                      style={{ backgroundColor: color.hex || '#e5e7eb' }}
                       title={color.name}
                     />
                   ))}
-                  {product.colors.length > 3 && (
-                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs text-gray-500">
-                      +{product.colors.length - 3}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -292,7 +266,7 @@ export default function ProductGrid() {
                     addItem(product.defaultVariantId, product.id);
                   }
                 }}
-                className="mt-4 w-full py-2 bg-black text-white transition-all duration-300 flex items-center justify-center space-x-2 hover:bg-gray-800 shadow-md hover:shadow-lg hover:scale-105"
+                className="mt-4 w-full py-2 bg-black text-white flex items-center justify-center space-x-2"
               >
                 <ShoppingCart className="w-4 h-4" />
                 <span className="text-xs tracking-wider uppercase">Add to Cart</span>
