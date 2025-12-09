@@ -220,7 +220,7 @@ export default function ProductGrid() {
                 </div>
               </div>
 
-              <div className="mt-4 w-full py-2 bg-black text-white flex items-center justify-center space-x-2 cursor-pointer">
+              <div className="mt-4 w-full h-12 bg-black text-white flex items-center justify-center space-x-2 cursor-pointer">
                 <ShoppingCart className="w-4 h-4" />
                 <span className="text-xs tracking-wider uppercase">View & Add</span>
               </div>
