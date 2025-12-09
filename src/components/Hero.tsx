@@ -127,9 +127,9 @@ export default function Hero() {
       };
     }
 
-    const from = heroMain.gradient_from || '#fef3c7';
-    const via = heroMain.gradient_via || '#fed7aa';
-    const to = heroMain.gradient_to || '#fecdd3';
+    const from = heroMain?.gradient_from || '#fef3c7';
+    const via = heroMain?.gradient_via || '#fed7aa';
+    const to = heroMain?.gradient_to || '#fecdd3';
     return { background: `linear-gradient(to bottom right, ${from}, ${via}, ${to})` };
   };
 
