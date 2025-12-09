@@ -172,6 +172,7 @@ export default function ProductGrid() {
                   : 'opacity-0 translate-y-10'
               }`}
               style={{ transitionDelay: `${index * 100}ms` }}
+              onClick={() => setQuickViewProduct(product)}
             >
                 <div
                   className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
@@ -181,7 +182,6 @@ export default function ProductGrid() {
                     alt={product.name}
                     className="absolute inset-0 w-full h-full object-contain bg-white"
                   />
-
                 <div className="absolute top-3 right-3 flex gap-1">
                   {product.images.map((_, idx) => (
                     <div
@@ -191,34 +191,6 @@ export default function ProductGrid() {
                       }`}
                     />
                   ))}
-                </div>
-
-                {/* Overlay Actions - always visible, no hover dependency */}
-                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center space-x-3 opacity-100">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setQuickViewProduct(product);
-                    }}
-                    className="p-2 bg-white rounded-2xl"
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleWishlist(product.id);
-                    }}
-                    className="p-2 bg-white rounded-2xl"
-                  >
-                    <Heart
-                      className={`w-5 h-5 ${
-                        isInWishlist(product.id)
-                          ? 'fill-black'
-                          : 'fill-none'
-                      }`}
-                    />
-                  </button>
                 </div>
               </div>
 
@@ -244,18 +216,10 @@ export default function ProductGrid() {
                 </div>
               </div>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (product.defaultVariantId) {
-                    addItem(product.defaultVariantId, product.id);
-                  }
-                }}
-                className="mt-4 w-full py-2 bg-black text-white flex items-center justify-center space-x-2"
-              >
+              <div className="mt-4 w-full py-2 bg-black text-white flex items-center justify-center space-x-2 cursor-pointer">
                 <ShoppingCart className="w-4 h-4" />
-                <span className="text-xs tracking-wider uppercase">Add to Cart</span>
-              </button>
+                <span className="text-xs tracking-wider uppercase">View & Add</span>
+              </div>
             </div>
           ))}
         </div>

@@ -65,12 +65,15 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                 onMouseEnter={() => setMenOpen(true)}
                 onMouseLeave={() => setMenOpen(false)}
               >
-                <button className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1">
+                <button
+                  onClick={() => setMenOpen(!menOpen)}
+                  className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1"
+                >
                   <span>Men</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {menOpen && (
-                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2">
+                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2 z-50">
                     <Link to="/category/shoes?gender=men" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Shoes</Link>
                     <Link to="/category/accessories?gender=men" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Accessories</Link>
                     <Link to="/category/clothes?gender=men" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Clothes</Link>
@@ -83,12 +86,15 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                 onMouseEnter={() => setWomenOpen(true)}
                 onMouseLeave={() => setWomenOpen(false)}
               >
-                <button className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1">
+                <button
+                  onClick={() => setWomenOpen(!womenOpen)}
+                  className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1"
+                >
                   <span>Women</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {womenOpen && (
-                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2">
+                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2 z-50">
                     <Link to="/category/accessories?gender=women" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Accessories</Link>
                     <Link to="/category/shoes?gender=women" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Shoes</Link>
                     <Link to="/category/clothes?gender=women" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Clothes</Link>
@@ -100,12 +106,15 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                 onMouseEnter={() => setSportOpen(true)}
                 onMouseLeave={() => setSportOpen(false)}
               >
-                <button className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1">
+                <button
+                  onClick={() => setSportOpen(!sportOpen)}
+                  className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1"
+                >
                   <span>Sport</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {sportOpen && (
-                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2">
+                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2 z-50">
                     <Link to="/category/jersey" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Jersey</Link>
                     <Link to="/category/shorts" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Shorts</Link>
                     <Link to="/category/slides" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Slides</Link>
@@ -117,12 +126,15 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                 onMouseEnter={() => setCollectionsOpen(true)}
                 onMouseLeave={() => setCollectionsOpen(false)}
               >
-                <button className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1">
+                <button
+                  onClick={() => setCollectionsOpen(!collectionsOpen)}
+                  className="text-sm tracking-wider uppercase hover:opacity-60 transition-opacity flex items-center space-x-1"
+                >
                   <span>Collections</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {collectionsOpen && (
-                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2">
+                  <div className="absolute top-full left-0 mt-2 bg-white border border-black shadow-lg min-w-[200px] py-2 z-50">
                     <Link to="/category/accessories" className="block px-6 py-3 text-sm tracking-wider uppercase hover:bg-gray-100 transition-colors">Accessories</Link>
                   </div>
                 )}

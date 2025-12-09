@@ -154,7 +154,8 @@ export default function CategoryPage() {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="group cursor-default transition-all duration-700"
+                className="group cursor-pointer transition-all duration-700"
+                onClick={() => setQuickViewProduct(product)}
               >
                 <div
                   className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
@@ -164,31 +165,6 @@ export default function CategoryPage() {
                     alt={product.name}
                     className="absolute inset-0 w-full h-full object-contain bg-white"
                   />
-
-                  <div className="absolute inset-0 flex items-center justify-center space-x-3 bg-black bg-opacity-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setQuickViewProduct(product);
-                      }}
-                      className="p-2 bg-white rounded-2xl"
-                    >
-                      <Eye className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist(product.id);
-                      }}
-                      className="p-2 bg-white rounded-2xl"
-                    >
-                      <Heart
-                        className={`w-5 h-5 ${
-                          isInWishlist(product.id) ? 'fill-black' : 'fill-none'
-                        }`}
-                      />
-                    </button>
-                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -211,18 +187,10 @@ export default function CategoryPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (product.defaultVariantId) {
-                      addItem(product.defaultVariantId, product.id);
-                    }
-                  }}
-                  className="mt-4 w-full py-2 bg-black text-white flex items-center justify-center space-x-2"
-                >
+                <div className="mt-4 w-full py-2 bg-black text-white flex items-center justify-center space-x-2 cursor-pointer">
                   <ShoppingCart className="w-4 h-4" />
-                  <span className="text-xs tracking-wider uppercase">Add to Cart</span>
-                </button>
+                  <span className="text-xs tracking-wider uppercase">View & Add</span>
+                </div>
               </div>
             ))}
           </div>
