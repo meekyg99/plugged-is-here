@@ -72,21 +72,33 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   }, [productId]);
 
   const fetchCategories = async () => {
-    console.log('🔍 Fetching categories from database...');
-    const { data, error } = await supabase.from('categories').select('*').order('name');
-    console.log('📦 Categories fetched:', data);
-    console.log('❌ Error (if any):', error);
-    console.log('📊 Number of categories:', data?.length || 0);
-    
-    if (error) {
-      console.error('🚨 Failed to fetch categories:', error.message, error.details);
-    }
-    
-    if (data && data.length > 0) {
-      console.log('✅ Setting categories state with:', data);
-      setCategories(data);
-    } else {
-      console.warn('⚠️ No categories found in database!');
+    try {
+      console.log('🔍 Fetching categories from database...');
+      console.log('🔗 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+      const { data, error } = await supabase.from('categories').select('*').order('name');
+
+      console.log('📦 Categories fetched:', data);
+      console.log('❌ Error (if any):', error);
+      console.log('📊 Number of categories:', data?.length || 0);
+
+      if (error) {
+        console.error('🚨 Failed to fetch categories:', error.message, error.details, error.hint);
+        setErrors({ category_id: `Error: ${error.message}` });
+        return;
+      }
+
+      if (data) {
+        console.log('✅ Setting categories state with:', data);
+        setCategories(data);
+        console.log('✅ Categories state set. Current length:', data.length);
+      } else {
+        console.warn('⚠️ No data returned from database!');
+      }
+    } catch (err) {
+      console.error('💥 Exception while fetching categories:', err);
+      setErrors({ category_id: `Exception: ${err}` });
     }
   };
 
@@ -340,9 +352,22 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
             <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
               Category * {categories.length > 0 && <span className="text-green-600 text-xs">({categories.length} available)</span>}
             </label>
+
+            <div className="bg-blue-50 border border-blue-200 p-2 mb-2 text-xs">
+              <strong>DEBUG:</strong> Categories state length: {categories.length}
+              {categories.length > 0 && (
+                <div className="mt-1">
+                  <strong>Categories:</strong> {categories.map(c => c.name).join(', ')}
+                </div>
+              )}
+            </div>
+
             <select
               value={formData.category_id}
-              onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+              onChange={(e) => {
+                console.log('Category selected:', e.target.value);
+                setFormData({ ...formData, category_id: e.target.value });
+              }}
               className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-black"
             >
               <option value="">Select Category</option>
