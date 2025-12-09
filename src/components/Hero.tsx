@@ -172,11 +172,9 @@ export default function Hero() {
                       opacity: 1 - scrollY * 0.002,
                     }}
                   >
-                    {heroMain?.title || 'Summer 2025'}
-                                      {heroTitle}
+                    {heroTitle}
                   </h1>
-                  {heroMain?.subtitle && (
-                                      {heroSubtitle}
+                  {heroSubtitle && (
                     <p
                       className={`text-xl sm:text-2xl tracking-[0.3em] uppercase transition-all duration-1500 delay-300 ${
                         isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
@@ -185,7 +183,7 @@ export default function Hero() {
                         opacity: 1 - scrollY * 0.003,
                       }}
                     >
-                      {heroMain.subtitle || 'New season, new silhouettes'}
+                      {heroSubtitle}
                     </p>
                   )}
                   {heroMain?.cta_text && (
