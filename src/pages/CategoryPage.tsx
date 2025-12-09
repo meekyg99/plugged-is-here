@@ -60,12 +60,13 @@ export default function CategoryPage() {
 
       const displayProducts: ProductDisplay[] = filtered.map((product: ProductWithDetails) => {
         const uniqueColors = product.variants.reduce((acc: { name: string; hex: string }[], variant) => {
-          if (variant.color) {
-            const hex = variant.color_hex || (variant.color as string);
-            const key = variant.color.toLowerCase();
-            if (!acc.find((c) => c.name.toLowerCase() === key)) {
-              acc.push({ name: variant.color, hex });
-            }
+          const name = variant.color || variant.color_hex || '';
+          const hex = variant.color_hex || (variant.color as string) || '#e5e7eb';
+          if (!name && !hex) return acc;
+
+          const key = `${(variant.color || '').toLowerCase()}_${hex.toLowerCase()}`;
+          if (!acc.find((c) => `${c.name.toLowerCase()}_${(c.hex || '').toLowerCase()}` === key)) {
+            acc.push({ name: name || 'Color', hex });
           }
           return acc;
         }, []);
@@ -185,7 +186,7 @@ export default function CategoryPage() {
                         key={idx}
                         className="w-5 h-5 rounded-full border border-gray-200"
                         style={{ backgroundColor: color.hex || color.name || '#e5e7eb' }}
-                        title={color.name}
+                        title={color.name || 'Color'}
                       />
                     ))}
                   </div>
