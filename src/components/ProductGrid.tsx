@@ -171,7 +171,7 @@ export default function ProductGrid() {
             <div
               key={product.id}
               ref={(el) => (productRefs.current[index] = el)}
-              className={`group cursor-default transition-all duration-700 ${
+              className={`group cursor-default transition-all duration-700 flex flex-col h-full ${
                 visibleProducts.includes(product.id)
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-10'
@@ -199,7 +199,7 @@ export default function ProductGrid() {
                 </div>
               </div>
 
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col flex-1">
                 <div className="space-y-2 flex-1">
                   <p className="text-xs tracking-wider uppercase text-gray-500">
                     {product.category}

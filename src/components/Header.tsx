@@ -57,7 +57,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
                 <img
                   src="https://res.cloudinary.com/darhndmms/image/upload/v1765207904/WhatsApp_Image_2025-10-28_at_11.51.32_0752b31a_-_Copy_ivmyz2.jpg"
                   alt="Plugged logo"
-                  className="h-10 w-auto"
+                  className="h-10 w-auto bg-white mix-blend-multiply"
                 />
               </Link>
               <div
@@ -145,7 +145,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }: HeaderProp
               <Logo />
             </div>
 
-            <div className="flex items-center space-x-4 sm:space-x-6">
+            <div className="flex items-center space-x-2 sm:space-x-6 ml-4 sm:ml-0">
               <button onClick={() => setSearchOpen(true)} className="relative group p-2 hover:bg-gray-50 rounded-2xl transition-all duration-300">
                 <Search className="w-5 h-5 transition-transform group-hover:scale-110" />
               </button>
