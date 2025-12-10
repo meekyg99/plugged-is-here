@@ -39,23 +39,85 @@ export default function ContentPage() {
     try {
       setLoading(true);
 
-      const { data: heroData } = await supabase
+      // Fetch or create hero_main banner
+      let { data: heroData } = await supabase
         .from('banners')
         .select('*')
         .eq('banner_type', 'hero_main')
         .eq('position', 'main')
         .maybeSingle();
 
+      if (!heroData) {
+        // Create default hero_main banner
+        const { data: newHero, error: heroError } = await supabase
+          .from('banners')
+          .insert({
+            title: 'Summer 2025',
+            subtitle: 'New Collection',
+            banner_type: 'hero_main',
+            position: 'main',
+            cta_text: 'Shop Now',
+            cta_url: '/category/all',
+            background_type: 'gradient',
+            gradient_from: '#fef3c7',
+            gradient_via: '#fed7aa',
+            gradient_to: '#fecdd3',
+            image_url: '',
+            is_active: true,
+            display_order: 0,
+          })
+          .select()
+          .single();
+
+        if (heroError) {
+          console.error('Error creating hero banner:', heroError);
+        } else {
+          heroData = newHero;
+        }
+      }
+
       if (heroData) {
         setHeroMain(heroData);
       }
 
-      const { data: categoryData } = await supabase
+      // Fetch category banners
+      let { data: categoryData } = await supabase
         .from('banners')
         .select('*')
         .eq('banner_type', 'hero_category')
         .in('position', ['men', 'women', 'accessories'])
         .order('display_order');
+
+      // Create missing category banners
+      const positions = ['men', 'women', 'accessories'];
+      const existingPositions = (categoryData || []).map((b) => b.position);
+      const missingPositions = positions.filter((p) => !existingPositions.includes(p));
+
+      if (missingPositions.length > 0) {
+        const newBanners = missingPositions.map((pos, idx) => ({
+          title: pos.charAt(0).toUpperCase() + pos.slice(1),
+          subtitle: null,
+          banner_type: 'hero_category',
+          position: pos,
+          image_url: '',
+          link_url: `/category/${pos === 'accessories' ? 'accessories' : 'all'}?gender=${pos === 'accessories' ? '' : pos}`,
+          is_active: true,
+          display_order: existingPositions.length + idx,
+        }));
+
+        const { data: insertedBanners, error: insertError } = await supabase
+          .from('banners')
+          .insert(newBanners)
+          .select();
+
+        if (insertError) {
+          console.error('Error creating category banners:', insertError);
+        } else if (insertedBanners) {
+          categoryData = [...(categoryData || []), ...insertedBanners].sort(
+            (a, b) => a.display_order - b.display_order
+          );
+        }
+      }
 
       if (categoryData) {
         setCategoryBanners(categoryData);
