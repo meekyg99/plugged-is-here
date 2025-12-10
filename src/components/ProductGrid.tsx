@@ -213,6 +213,9 @@ export default function ProductGrid() {
                   <img
                     src={product.images[0]}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 25vw, (min-width: 640px) 40vw, 50vw"
                     className="absolute inset-0 w-full h-full object-contain bg-white"
                   />
                 <div className="absolute top-3 right-3 flex gap-1">

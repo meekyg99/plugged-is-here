@@ -107,6 +107,9 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                 <img
                   src={product.images[currentImageIndex]}
                   alt={product.name}
+                  loading="eager"
+                  decoding="async"
+                  sizes="(min-width: 768px) 50vw, 100vw"
                   className="w-full h-full object-contain bg-white"
                 />
                 <button
@@ -132,6 +135,9 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                     <img
                       src={img}
                       alt={`${product.name} ${idx + 1}`}
+                      loading="lazy"
+                      decoding="async"
+                      sizes="(min-width: 768px) 10vw, 25vw"
                       className="w-full h-full object-cover"
                     />
                   </button>
