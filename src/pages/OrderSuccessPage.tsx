@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { CheckCircle, Download, Mail } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { OrderWithDetails } from '../types/database';
+import { trackPurchase } from '../lib/analytics';
 
 export default function OrderSuccessPage() {
   const [order, setOrder] = useState<OrderWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const purchaseTracked = useRef(false);
 
   const orderId = window.location.pathname.split('/').pop();
 
@@ -39,6 +41,20 @@ export default function OrderSuccessPage() {
 
     fetchOrder();
   }, [orderId]);
+
+  useEffect(() => {
+    if (!order || purchaseTracked.current) return;
+    const items = (order.items || []).map((item: any) => ({
+      item_id: item.variant_id,
+      item_name: item.product?.name,
+      item_category: item.product?.category_id || undefined,
+      item_variant: `${item.variant?.color || ''} ${item.variant?.size || ''}`.trim(),
+      price: item.variant?.price || item.price,
+      quantity: item.quantity,
+    }));
+    trackPurchase(items, order.total, order.order_number || order.id, 'NGN');
+    purchaseTracked.current = true;
+  }, [order]);
 
   if (loading) {
     return (

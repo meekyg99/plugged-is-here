@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from '../../hooks/useNavigate';
 import { supabase } from '../../lib/supabase';
 import { sendOrderConfirmationEmail } from '../../services/emailService';
+import { trackBeginCheckout } from '../../lib/analytics';
 
 interface CheckoutReviewProps {
   data: {
@@ -16,7 +17,7 @@ interface CheckoutReviewProps {
   onBack: () => void;
 }
 
-export default function CheckoutReview({ data, onBack }: CheckoutReviewProps) {
+export default function CheckoutReview({ data , onBack }: CheckoutReviewProps) {
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +30,17 @@ export default function CheckoutReview({ data, onBack }: CheckoutReviewProps) {
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     setError('');
+
+    // Emit begin_checkout before network calls
+    const analyticsItems = items.map((item) => ({
+      item_id: item.variant_id,
+      item_name: item.product?.name,
+      item_category: item.product?.category_id || undefined,
+      item_variant: `${item.variant?.color || ''} ${item.variant?.size || ''}`.trim(),
+      price: item.variant?.price ?? 0,
+      quantity: item.quantity,
+    }));
+    trackBeginCheckout(analyticsItems, orderTotal, 'NGN');
 
     try {
       // First, check stock availability for all items

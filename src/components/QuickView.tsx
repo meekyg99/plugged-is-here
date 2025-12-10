@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Heart, ShoppingBag, Share2, ZoomIn, Truck, RefreshCcw, ShieldCheck } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { ProductVariant } from '../types/database';
+import { trackAddToCart, trackViewItem } from '../lib/analytics';
 
 interface QuickViewProps {
   isOpen: boolean;
@@ -70,8 +71,36 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
     : null;
   const isAddDisabled = sizeNotSelected || outOfStock || !activeVariant;
 
+  useEffect(() => {
+    if (!isOpen || !activeVariant) return;
+    trackViewItem(
+      {
+        item_id: activeVariant.id,
+        item_name: product.name,
+        item_category: product.category,
+        item_variant: `${activeVariant.color || ''} ${activeVariant.size || ''}`.trim(),
+        price: activeVariant.price,
+        quantity: 1,
+      },
+      activeVariant.price,
+      'NGN'
+    );
+  }, [isOpen, activeVariant, product.name, product.category]);
+
   const handleAddToCart = () => {
     if (isAddDisabled || !activeVariant) return;
+    trackAddToCart(
+      {
+        item_id: activeVariant.id,
+        item_name: product.name,
+        item_category: product.category,
+        item_variant: `${activeVariant.color || ''} ${activeVariant.size || ''}`.trim(),
+        price: activeVariant.price,
+        quantity: 1,
+      },
+      activeVariant.price,
+      'NGN'
+    );
     addItem(activeVariant.id, product.id);
     onClose();
   };
