@@ -199,31 +199,33 @@ export default function ProductGrid() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <p className="text-xs tracking-wider uppercase text-gray-500">
-                  {product.category}
-                </p>
-                <h3 className="text-sm tracking-wider uppercase">
-                  {product.name}
-                </h3>
+              <div className="flex flex-col h-full">
+                <div className="space-y-2 flex-1">
+                  <p className="text-xs tracking-wider uppercase text-gray-500">
+                    {product.category}
+                  </p>
+                  <h3 className="text-sm tracking-wider uppercase">
+                    {product.name}
+                  </h3>
 
-                <p className="text-sm font-light">{product.price}</p>
+                  <p className="text-sm font-light">{product.price}</p>
 
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {product.colors.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className="w-5 h-5 rounded-full border border-gray-200"
-                      style={{ backgroundColor: color.hex || color.name || '#e5e7eb' }}
-                      title={color.name || 'Color'}
-                    />
-                  ))}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {product.colors.map((color, idx) => (
+                      <div
+                        key={idx}
+                        className="w-5 h-5 rounded-full border border-gray-200"
+                        style={{ backgroundColor: color.hex || color.name || '#e5e7eb' }}
+                        title={color.name || 'Color'}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="mt-4 w-full h-12 bg-black text-white flex items-center justify-center space-x-2 cursor-pointer">
-                <ShoppingCart className="w-4 h-4" />
-                <span className="text-xs tracking-wider uppercase">View & Add</span>
+                <div className="mt-4 w-full h-12 bg-black text-white flex items-center justify-center space-x-2 cursor-pointer">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="text-xs tracking-wider uppercase">View & Add</span>
+                </div>
               </div>
             </div>
           ))}

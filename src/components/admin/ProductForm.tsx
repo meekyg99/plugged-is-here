@@ -360,6 +360,7 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   };
 
   const updateProduct = async () => {
+    // Update product base info
     const { error: productError } = await supabase
       .from('products')
       .update({
@@ -375,6 +376,142 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
       .eq('id', productId);
 
     if (productError) throw productError;
+
+    // Fetch existing variants and images to determine which to update/delete/add
+    const { data: existingVariants } = await supabase
+      .from('product_variants')
+      .select('id')
+      .eq('product_id', productId);
+
+    const { data: existingImages } = await supabase
+      .from('product_images')
+      .select('id')
+      .eq('product_id', productId);
+
+    const existingVariantIds = new Set((existingVariants || []).map(v => v.id));
+    const existingImageIds = new Set((existingImages || []).map(img => img.id));
+
+    // Separate variants into updates and inserts
+    const variantsToUpdate = formData.variants.filter(v => v.id && existingVariantIds.has(v.id));
+    const variantsToInsert = formData.variants.filter(v => !v.id);
+    const variantIdsToKeep = new Set(formData.variants.filter(v => v.id).map(v => v.id));
+    const variantsToDelete = Array.from(existingVariantIds).filter(id => !variantIdsToKeep.has(id));
+
+    // Update existing variants
+    for (const variant of variantsToUpdate) {
+      const { error } = await supabase
+        .from('product_variants')
+        .update({
+          sku: variant.sku.trim(),
+          size: variant.size?.trim() || null,
+          color: variant.color?.trim() || null,
+          color_hex: variant.color_hex || null,
+          material: variant.material?.trim() || null,
+          price: Number(variant.price),
+          compare_at_price:
+            variant.compare_at_price === undefined || variant.compare_at_price === null
+              ? null
+              : Number(variant.compare_at_price),
+          stock_quantity:
+            variant.stock_quantity === undefined || variant.stock_quantity === null
+              ? 0
+              : Number(variant.stock_quantity),
+          low_stock_threshold:
+            variant.low_stock_threshold === undefined || variant.low_stock_threshold === null
+              ? 5
+              : Number(variant.low_stock_threshold),
+        })
+        .eq('id', variant.id);
+
+      if (error) throw error;
+    }
+
+    // Insert new variants
+    if (variantsToInsert.length > 0) {
+      const { error } = await supabase
+        .from('product_variants')
+        .insert(
+          variantsToInsert.map((v) => ({
+            product_id: productId,
+            sku: v.sku.trim(),
+            size: v.size?.trim() || null,
+            color: v.color?.trim() || null,
+            color_hex: v.color_hex || null,
+            material: v.material?.trim() || null,
+            price: Number(v.price),
+            compare_at_price:
+              v.compare_at_price === undefined || v.compare_at_price === null
+                ? null
+                : Number(v.compare_at_price),
+            stock_quantity:
+              v.stock_quantity === undefined || v.stock_quantity === null
+                ? 0
+                : Number(v.stock_quantity),
+            low_stock_threshold:
+              v.low_stock_threshold === undefined || v.low_stock_threshold === null
+                ? 5
+                : Number(v.low_stock_threshold),
+          }))
+        );
+
+      if (error) throw error;
+    }
+
+    // Delete removed variants
+    if (variantsToDelete.length > 0) {
+      const { error } = await supabase
+        .from('product_variants')
+        .delete()
+        .in('id', variantsToDelete);
+
+      if (error) throw error;
+    }
+
+    // Separate images into updates and inserts
+    const imagesToUpdate = formData.images.filter(img => img.id && existingImageIds.has(img.id));
+    const imagesToInsert = formData.images.filter(img => !img.id);
+    const imageIdsToKeep = new Set(formData.images.filter(img => img.id).map(img => img.id));
+    const imagesToDelete = Array.from(existingImageIds).filter(id => !imageIdsToKeep.has(id));
+
+    // Update existing images
+    for (const image of imagesToUpdate) {
+      const { error } = await supabase
+        .from('product_images')
+        .update({
+          image_url: image.image_url,
+          alt_text: image.alt_text || null,
+          display_order: image.display_order,
+        })
+        .eq('id', image.id);
+
+      if (error) throw error;
+    }
+
+    // Insert new images
+    if (imagesToInsert.length > 0) {
+      const { error } = await supabase
+        .from('product_images')
+        .insert(
+          imagesToInsert.map((img) => ({
+            product_id: productId,
+            image_url: img.image_url,
+            alt_text: img.alt_text || null,
+            display_order: img.display_order,
+          }))
+        );
+
+      if (error) throw error;
+    }
+
+    // Delete removed images
+    if (imagesToDelete.length > 0) {
+      const { error } = await supabase
+        .from('product_images')
+        .delete()
+        .in('id', imagesToDelete);
+
+      if (error) throw error;
+    }
   };
 
   return (
