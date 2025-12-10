@@ -1,13 +1,21 @@
-import { Resend } from 'resend';
 import { renderWelcomeEmail } from '../emails/templates/WelcomeEmail';
 import { renderOrderConfirmationEmail } from '../emails/templates/OrderConfirmationEmail';
 import { renderOrderStatusEmail } from '../emails/templates/OrderStatusEmail';
 import { renderAdmin2FAEmail } from '../emails/templates/Admin2FAEmail';
 
-// Only initialize Resend if API key is provided
-const apiKey = import.meta.env.VITE_RESEND_API_KEY;
-const resend = apiKey && apiKey !== 'your-resend-api-key-here' ? new Resend(apiKey) : null;
-const fromEmail = import.meta.env.VITE_EMAIL_FROM_ADDRESS || 'onboarding@resend.dev';
+const mailjetKey = import.meta.env.VITE_MAILJET_API_KEY;
+const mailjetSecret = import.meta.env.VITE_MAILJET_API_SECRET;
+const fromEmailRaw = import.meta.env.VITE_EMAIL_FROM_ADDRESS || 'Plugged <info@pluggedby212.shop>';
+
+const parseFrom = (raw: string) => {
+  const match = raw.match(/^(.*)<(.+)>$/);
+  if (match) {
+    return { name: match[1].trim() || 'Plugged', email: match[2].trim() };
+  }
+  return { name: 'Plugged', email: raw.trim() };
+};
+
+const { name: fromName, email: fromEmail } = parseFrom(fromEmailRaw);
 
 interface EmailResponse {
   success: boolean;
@@ -17,7 +25,39 @@ interface EmailResponse {
 
 // Helper to check if email is configured
 function isEmailConfigured(): boolean {
-  return resend !== null;
+  return Boolean(mailjetKey && mailjetSecret);
+}
+
+async function sendMailjetEmail({ to, subject, html }: { to: string; subject: string; html: string; }) {
+  const auth = btoa(`${mailjetKey}:${mailjetSecret}`);
+  const payload = {
+    Messages: [
+      {
+        From: { Email: fromEmail, Name: fromName },
+        To: [{ Email: to }],
+        Subject: subject,
+        HTMLPart: html,
+      },
+    ],
+  };
+
+  const res = await fetch('https://api.mailjet.com/v3.1/send', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Mailjet send failed (${res.status}): ${text}`);
+  }
+
+  const data = await res.json();
+  const messageId = data?.Messages?.[0]?.To?.[0]?.MessageUUID;
+  return { success: true, messageId } as EmailResponse;
 }
 
 // Welcome Email
@@ -34,20 +74,13 @@ export async function sendWelcomeEmail(
   try {
     const html = renderWelcomeEmail({ userName, shopUrl });
     
-    const { data, error } = await resend!.emails.send({
-      from: fromEmail,
+    const result = await sendMailjetEmail({
       to,
       subject: `Welcome to PLUGGED, ${userName}! 🎉`,
       html,
     });
 
-    if (error) {
-      console.error('Error sending welcome email:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log('Welcome email sent successfully:', data);
-    return { success: true, messageId: data?.id };
+    return result;
   } catch (error: any) {
     console.error('Exception sending welcome email:', error);
     return { success: false, error: error.message };
@@ -67,20 +100,13 @@ export async function sendOrderConfirmationEmail(
   try {
     const html = renderOrderConfirmationEmail(orderData);
     
-    const { data, error } = await resend!.emails.send({
-      from: fromEmail,
+    const result = await sendMailjetEmail({
       to,
       subject: `Order Confirmation - #${orderData.orderNumber}`,
       html,
     });
 
-    if (error) {
-      console.error('Error sending order confirmation:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log('Order confirmation sent successfully:', data);
-    return { success: true, messageId: data?.id };
+    return result;
   } catch (error: any) {
     console.error('Exception sending order confirmation:', error);
     return { success: false, error: error.message };
@@ -106,20 +132,13 @@ export async function sendOrderStatusEmail(
       delivered: 'Your Order Has Been Delivered',
     };
     
-    const { data, error } = await resend!.emails.send({
-      from: fromEmail,
+    const result = await sendMailjetEmail({
       to,
       subject: `${statusTitles[statusData.status]} - #${statusData.orderNumber}`,
       html,
     });
 
-    if (error) {
-      console.error('Error sending order status email:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log('Order status email sent successfully:', data);
-    return { success: true, messageId: data?.id };
+    return result;
   } catch (error: any) {
     console.error('Exception sending order status email:', error);
     return { success: false, error: error.message };
@@ -147,20 +166,13 @@ export async function sendAdmin2FAEmail(
       userAgent,
     });
     
-    const { data, error } = await resend!.emails.send({
-      from: fromEmail,
+    const result = await sendMailjetEmail({
       to,
       subject: `🔐 Admin Login Verification Code: ${code}`,
       html,
     });
 
-    if (error) {
-      console.error('Error sending 2FA email:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log('2FA email sent successfully:', data);
-    return { success: true, messageId: data?.id };
+    return result;
   } catch (error: any) {
     console.error('Exception sending 2FA email:', error);
     return { success: false, error: error.message };
@@ -230,20 +242,13 @@ export async function sendPasswordResetEmail(
 </html>
     `.trim();
     
-    const { data, error } = await resend!.emails.send({
-      from: fromEmail,
+    const result = await sendMailjetEmail({
       to,
       subject: 'Reset Your PLUGGED Password',
       html,
     });
 
-    if (error) {
-      console.error('Error sending password reset email:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log('Password reset email sent successfully:', data);
-    return { success: true, messageId: data?.id };
+    return result;
   } catch (error: any) {
     console.error('Exception sending password reset email:', error);
     return { success: false, error: error.message };

@@ -1,9 +1,6 @@
-import { Resend } from 'resend';
-
-const API_KEY = import.meta.env.VITE_RESEND_API_KEY;
-const resend = API_KEY && API_KEY !== 'your-resend-api-key-here' ? new Resend(API_KEY) : null;
-
-const FROM_EMAIL = import.meta.env.VITE_EMAIL_FROM_ADDRESS || 'Plugged <noreply@pluggedby212.shop>';
+const MAILJET_KEY = import.meta.env.VITE_MAILJET_API_KEY;
+const MAILJET_SECRET = import.meta.env.VITE_MAILJET_API_SECRET;
+const FROM_EMAIL_RAW = import.meta.env.VITE_EMAIL_FROM_ADDRESS || 'Plugged <info@pluggedby212.shop>';
 const BRAND_NAME = 'Plugged';
 const BRAND_COLOR = '#000000';
 const WEBSITE_URL = 'https://pluggedby212.shop';
@@ -135,21 +132,51 @@ const emailTemplate = (content: string, preheader?: string) => `
 `;
 
 // Send email function
+const parseFrom = (raw: string) => {
+  const match = raw.match(/^(.*)<(.+)>$/);
+  if (match) {
+    return { name: match[1].trim() || 'Plugged', email: match[2].trim() };
+  }
+  return { name: 'Plugged', email: raw.trim() };
+};
+
+const { name: FROM_NAME, email: FROM_EMAIL } = parseFrom(FROM_EMAIL_RAW);
+
 async function sendEmail({ to, subject, html }: EmailOptions) {
-  if (!resend) {
+  if (!MAILJET_KEY || !MAILJET_SECRET) {
     console.warn('Email service not configured - skipping email send');
     return { success: false, error: 'Email service not configured' };
   }
-  
   try {
-    const response = await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject,
-      html,
+    const auth = btoa(`${MAILJET_KEY}:${MAILJET_SECRET}`);
+    const payload = {
+      Messages: [
+        {
+          From: { Email: FROM_EMAIL, Name: FROM_NAME },
+          To: [{ Email: to }],
+          Subject: subject,
+          HTMLPart: html,
+        },
+      ],
+    };
+
+    const res = await fetch('https://api.mailjet.com/v3.1/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
     });
-    console.log('Email sent successfully:', response);
-    return { success: true, data: response };
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Mailjet send failed (${res.status}): ${text}`);
+    }
+
+    const data = await res.json();
+    console.log('Email sent successfully:', data);
+    return { success: true, data };
   } catch (error) {
     console.error('Failed to send email:', error);
     return { success: false, error };
