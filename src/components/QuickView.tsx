@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { X, Heart, ShoppingBag, Share2, ZoomIn, Truck, RefreshCcw, ShieldCheck } from 'lucide-react';
+import { X, Heart, ShoppingBag, Share2, ZoomIn, ShieldCheck } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { ProductVariant } from '../types/database';
@@ -217,21 +217,7 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                 </p>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8" aria-label="Trust and service information">
-                <div className="flex items-start gap-3 border border-gray-200 p-3">
-                  <Truck className="w-5 h-5" aria-hidden="true" />
-                  <div>
-                    <p className="text-xs font-semibold tracking-wide uppercase">Fast delivery</p>
-                    <p className="text-xs text-gray-600">Ships in 2-5 business days</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 border border-gray-200 p-3">
-                  <RefreshCcw className="w-5 h-5" aria-hidden="true" />
-                  <div>
-                    <p className="text-xs font-semibold tracking-wide uppercase">Easy returns</p>
-                    <p className="text-xs text-gray-600">7-day hassle-free returns</p>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 gap-3 mb-8" aria-label="Trust and service information">
                 <div className="flex items-start gap-3 border border-gray-200 p-3">
                   <ShieldCheck className="w-5 h-5" aria-hidden="true" />
                   <div>
@@ -323,16 +309,15 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                   onClick={handleToggleWishlist}
                   aria-pressed={isInWishlist(product.id)}
                   aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                  className="py-2 border border-black flex items-center justify-center space-x-2 hover:bg-black hover:text-white transition-colors group focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
+                  className="py-2 px-3 border border-black flex items-center justify-center hover:bg-black hover:text-white transition-colors group focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
                 >
                   <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-current' : 'group-hover:fill-current'}`} />
-                  <span className="text-xs tracking-wider uppercase">
-                    {isInWishlist(product.id) ? 'In Wishlist' : 'Wishlist'}
-                  </span>
                 </button>
-                <button className="py-2 border border-black flex items-center justify-center space-x-2 hover:bg-black hover:text-white transition-colors">
+                <button
+                  aria-label="Share product"
+                  className="py-2 px-3 border border-black flex items-center justify-center hover:bg-black hover:text-white transition-colors"
+                >
                   <Share2 className="w-4 h-4" />
-                  <span className="text-xs tracking-wider uppercase">Share</span>
                 </button>
               </div>
             </div>

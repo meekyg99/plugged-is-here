@@ -6,9 +6,11 @@ import { ProductWithDetails } from '../types/database';
 import { productService } from '../services/productService';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { trackViewItemList } from '../lib/analytics';
 
 interface ProductDisplay {
   id: string;
+  slug: string;
   name: string;
   description: string;
   category: string;
@@ -94,6 +96,7 @@ export default function ProductGrid() {
 
           return {
             id: product.id,
+              slug: product.slug,
             name: product.name,
             description: product.description || '',
             category: product.category?.name || 'Uncategorized',
@@ -109,6 +112,15 @@ export default function ProductGrid() {
             inStock,
           };
         });
+      if (displayProducts.length > 0) {
+        const analyticsItems = displayProducts.map((p) => ({
+          item_id: p.id,
+          item_name: p.name,
+          item_category: p.category,
+          price: typeof p.price === 'string' ? undefined : undefined,
+        }));
+        trackViewItemList(analyticsItems, 'featured', 'Featured Products');
+      }
       setProducts(displayProducts);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -191,20 +203,18 @@ export default function ProductGrid() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {products.map((product, index) => (
-            <div
-              key={product.id}
-              ref={(el) => (productRefs.current[index] = el)}
-              className={`group cursor-default transition-all duration-700 flex flex-col h-full ${
-                visibleProducts.includes(product.id)
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-10'
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-              onClick={() => setQuickViewProduct(product)}
-            >
-                <div
-                  className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
-                >
+              <div
+                key={product.id}
+                ref={(el) => (productRefs.current[index] = el)}
+                className={`group cursor-default transition-all duration-700 flex flex-col h-full ${
+                  visibleProducts.includes(product.id)
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-10'
+                }`}
+                style={{ transitionDelay: `${index * 100}ms` }}
+                onClick={() => setQuickViewProduct(product)}
+              >
+                <div className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md">
                   {product.stockBadge && (
                     <span className="absolute top-3 left-3 z-10 bg-black text-white text-[11px] tracking-wide uppercase px-3 py-1 shadow-md">
                       {product.stockBadge}
@@ -218,57 +228,55 @@ export default function ProductGrid() {
                     sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 25vw, (min-width: 640px) 40vw, 50vw"
                     className="absolute inset-0 w-full h-full object-contain bg-white"
                   />
-                <div className="absolute top-3 right-3 flex gap-1">
-                  {product.images.map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        idx === 0 ? 'bg-white w-4' : 'bg-white bg-opacity-50'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col flex-1">
-                <div className="space-y-2 flex-1">
-                  <p className="text-xs tracking-wider uppercase text-gray-500">
-                    {product.category}
-                  </p>
-                  <h3 className="text-sm tracking-wider uppercase">
-                    {product.name}
-                  </h3>
-
-                  <p className="text-sm font-light">{product.price}</p>
-
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {product.colors.map((color, idx) => (
+                  <div className="absolute top-3 right-3 flex gap-1">
+                    {product.images.map((_, idx) => (
                       <div
                         key={idx}
-                        className="w-5 h-5 rounded-full border border-gray-200"
-                        style={{ backgroundColor: color.hex || color.name || '#e5e7eb' }}
-                        title={color.name || 'Color'}
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          idx === 0 ? 'bg-white w-4' : 'bg-white bg-opacity-50'
+                        }`}
                       />
                     ))}
                   </div>
                 </div>
 
-                <div
-                  className={`mt-4 w-full h-12 flex items-center justify-center space-x-2 cursor-pointer ${
-                    product.inStock
-                      ? 'bg-black text-white'
-                      : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                  }`}
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span className="text-xs tracking-wider uppercase">
-                    {product.inStock ? 'View & Add' : 'Sold Out'}
-                  </span>
+                <div className="flex flex-col flex-1">
+                  <div className="space-y-2 flex-1">
+                    <p className="text-xs tracking-wider uppercase text-gray-500">
+                      {product.category}
+                    </p>
+                    <h3 className="text-sm tracking-wider uppercase">{product.name}</h3>
+
+                    <p className="text-sm font-light">{product.price}</p>
+
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {product.colors.map((color, idx) => (
+                        <div
+                          key={idx}
+                          className="w-5 h-5 rounded-full border border-gray-200"
+                          style={{ backgroundColor: color.hex || color.name || '#e5e7eb' }}
+                          title={color.name || 'Color'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    className={`mt-4 w-full h-12 flex items-center justify-center space-x-2 cursor-pointer ${
+                      product.inStock
+                        ? 'bg-black text-white'
+                        : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    }`}
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    <span className="text-xs tracking-wider uppercase">
+                      {product.inStock ? 'View & Add' : 'Sold Out'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
 
         {products.length > 0 && (
@@ -281,15 +289,15 @@ export default function ProductGrid() {
             </Link>
           </div>
         )}
-      </div>
 
-      {quickViewProduct && (
-        <QuickView
-          isOpen={quickViewProduct !== null}
-          onClose={() => setQuickViewProduct(null)}
-          product={quickViewProduct}
-        />
-      )}
+        {quickViewProduct && (
+          <QuickView
+            isOpen={quickViewProduct !== null}
+            onClose={() => setQuickViewProduct(null)}
+            product={quickViewProduct}
+          />
+        )}
+      </div>
     </section>
   );
 }

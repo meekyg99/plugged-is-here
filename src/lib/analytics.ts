@@ -73,6 +73,14 @@ export const trackBeginCheckout = (items: AnalyticsItem[], value?: number, curre
   });
 };
 
+export const trackViewItemList = (items: AnalyticsItem[], listId?: string, listName?: string) => {
+  sendGA('view_item_list', {
+    item_list_id: listId,
+    item_list_name: listName,
+    items,
+  });
+};
+
 export const trackPurchase = (
   items: AnalyticsItem[],
   value: number,

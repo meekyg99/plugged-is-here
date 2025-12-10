@@ -7,9 +7,11 @@ import { productService } from '../services/productService';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { Seo } from '../components/Seo';
+import { trackViewItemList } from '../lib/analytics';
 
 interface ProductDisplay {
   id: string;
+  slug: string;
   name: string;
   description: string;
   category: string;
@@ -139,6 +141,7 @@ export default function CategoryPage() {
 
         return {
           id: product.id,
+          slug: product.slug,
           name: product.name,
           description: product.description || '',
           category: product.category?.name || 'Uncategorized',
@@ -158,6 +161,15 @@ export default function CategoryPage() {
       });
 
       setProducts(displayProducts);
+      if (displayProducts.length > 0) {
+        const analyticsItems = displayProducts.map((p) => ({
+          item_id: p.id,
+          item_name: p.name,
+          item_category: p.category,
+          price: p.minPrice,
+        }));
+        trackViewItemList(analyticsItems, category || 'all', 'Category Listing');
+      }
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
