@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from '../../hooks/useNavigate';
@@ -214,6 +215,12 @@ export default function CheckoutReview({ data , onBack }: CheckoutReviewProps) {
             {data.paymentMethod === 'stripe' && 'Stripe (International Card)'}
             {data.paymentMethod === 'bank_transfer' && 'Direct Bank Transfer'}
           </p>
+          <div className="mt-3 flex items-center gap-3 p-3 border border-gray-200 bg-gray-50 rounded-sm" aria-label="Secure payment message">
+            <ShieldCheck className="w-5 h-5 text-green-600" aria-hidden="true" />
+            <p className="text-xs text-gray-700 tracking-wide">
+              Secure payment is processed over encrypted connection after you place the order.
+            </p>
+          </div>
         </div>
 
         <div>

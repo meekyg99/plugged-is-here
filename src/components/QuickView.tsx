@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { X, Heart, ShoppingBag, Share2, ZoomIn, ShieldCheck } from 'lucide-react';
+import { X, Heart, ShoppingBag, Share2, ZoomIn } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { ProductVariant } from '../types/database';
@@ -217,13 +217,29 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                 </p>
               )}
 
-              <div className="grid grid-cols-1 gap-3 mb-8" aria-label="Trust and service information">
-                <div className="flex items-start gap-3 border border-gray-200 p-3">
-                  <ShieldCheck className="w-5 h-5" aria-hidden="true" />
-                  <div>
-                    <p className="text-xs font-semibold tracking-wide uppercase">Secure payments</p>
-                    <p className="text-xs text-gray-600">SSL encrypted checkout</p>
-                  </div>
+              <div className="space-y-2 mb-8" aria-label="Accepted payment methods">
+                <p className="text-xs tracking-wider uppercase text-gray-600">We Accept</p>
+                <div className="flex items-center gap-2 border border-gray-200 p-3">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png"
+                    alt="Visa"
+                    className="h-6 object-contain"
+                  />
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png"
+                    alt="Mastercard"
+                    className="h-6 object-contain"
+                  />
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/2560px-PayPal.svg.png"
+                    alt="PayPal"
+                    className="h-5 object-contain"
+                  />
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/American_Express_logo_%282018%29.svg/2560px-American_Express_logo_%282018%29.svg.png"
+                    alt="American Express"
+                    className="h-6 object-contain"
+                  />
                 </div>
               </div>
 
