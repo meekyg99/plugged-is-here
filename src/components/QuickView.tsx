@@ -9,6 +9,7 @@ interface QuickViewProps {
   product: {
     id: string;
     name: string;
+    description: string;
     price: string;
     category: string;
     images: string[];
@@ -102,7 +103,13 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                 {product.name}
               </h2>
 
-              <p className="text-2xl font-light mb-8">{product.price}</p>
+              <p className="text-2xl font-light mb-4">{product.price}</p>
+
+              {product.description && (
+                <p className="text-sm text-gray-600 leading-relaxed mb-8">
+                  {product.description}
+                </p>
+              )}
 
               <div className="space-y-6 mb-8">
                 <div>

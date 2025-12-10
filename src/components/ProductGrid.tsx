@@ -10,6 +10,7 @@ import { useWishlist } from '../contexts/WishlistContext';
 interface ProductDisplay {
   id: string;
   name: string;
+  description: string;
   category: string;
   price: string;
   images: string[];
@@ -61,8 +62,14 @@ export default function ProductGrid() {
           }, []);
 
           const uniqueSizes = product.variants.reduce((acc: string[], variant) => {
-            if (variant.size && !acc.includes(variant.size)) {
-              acc.push(variant.size);
+            if (variant.size) {
+              // Split comma-separated sizes into individual items
+              const sizeParts = variant.size.split(',').map(s => s.trim()).filter(Boolean);
+              sizeParts.forEach(size => {
+                if (!acc.includes(size)) {
+                  acc.push(size);
+                }
+              });
             }
             return acc;
           }, []);
@@ -76,6 +83,7 @@ export default function ProductGrid() {
           return {
             id: product.id,
             name: product.name,
+            description: product.description || '',
             category: product.category?.name || 'Uncategorized',
             price: minPrice === maxPrice
               ? `₦${minPrice.toLocaleString()}`
