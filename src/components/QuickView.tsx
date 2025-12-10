@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { X, Heart, ShoppingBag, Share2, ZoomIn } from 'lucide-react';
+import { X, Heart, ShoppingBag, Share2, ZoomIn, Truck, RefreshCcw, ShieldCheck } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { ProductVariant } from '../types/database';
@@ -187,6 +187,30 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                   {product.description}
                 </p>
               )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8" aria-label="Trust and service information">
+                <div className="flex items-start gap-3 border border-gray-200 p-3">
+                  <Truck className="w-5 h-5" aria-hidden="true" />
+                  <div>
+                    <p className="text-xs font-semibold tracking-wide uppercase">Fast delivery</p>
+                    <p className="text-xs text-gray-600">Ships in 2-5 business days</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 border border-gray-200 p-3">
+                  <RefreshCcw className="w-5 h-5" aria-hidden="true" />
+                  <div>
+                    <p className="text-xs font-semibold tracking-wide uppercase">Easy returns</p>
+                    <p className="text-xs text-gray-600">7-day hassle-free returns</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 border border-gray-200 p-3">
+                  <ShieldCheck className="w-5 h-5" aria-hidden="true" />
+                  <div>
+                    <p className="text-xs font-semibold tracking-wide uppercase">Secure payments</p>
+                    <p className="text-xs text-gray-600">SSL encrypted checkout</p>
+                  </div>
+                </div>
+              </div>
 
               <div className="space-y-6 mb-8">
                 <div>
