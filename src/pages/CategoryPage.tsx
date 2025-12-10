@@ -29,8 +29,7 @@ interface ProductDisplay {
 
 export default function CategoryPage() {
   const { category } = useParams();
-  const [searchParams] = useSearchParams();
-  const [setParams] = useState(() => useSearchParams()[1]);
+  const [searchParams, setParams] = useSearchParams();
   const [products, setProducts] = useState<ProductDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickViewProduct, setQuickViewProduct] = useState<ProductDisplay | null>(null);
