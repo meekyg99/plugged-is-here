@@ -26,14 +26,62 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const STORAGE_KEY = 'wishlist_guest';
+
   useEffect(() => {
+    const guestItems = loadGuestWishlist();
+
     if (user) {
-      fetchWishlist();
+      mergeGuestIntoAccount(guestItems).finally(() => fetchWishlist());
     } else {
-      setItems([]);
+      setItems(guestItems);
       setLoading(false);
     }
   }, [user]);
+
+  const loadGuestWishlist = (): WishlistItem[] => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return parsed;
+    } catch (error) {
+      console.error('Error loading guest wishlist:', error);
+      return [];
+    }
+  };
+
+  const persistGuestWishlist = (next: WishlistItem[]) => {
+    if (!next || next.length === 0) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  };
+
+  const mergeGuestIntoAccount = async (guestItems: WishlistItem[]) => {
+    if (!user || guestItems.length === 0) return;
+
+    try {
+      for (const item of guestItems) {
+        const { error } = await supabase
+          .from('wishlists')
+          .insert({
+            user_id: user.id,
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+          });
+
+        if (error && error.code !== '23505') {
+          console.error('Error merging wishlist item:', error);
+        }
+      }
+      persistGuestWishlist([]);
+    } catch (error) {
+      console.error('Error merging guest wishlist:', error);
+    }
+  };
 
   const fetchWishlist = async () => {
     if (!user) return;
@@ -63,7 +111,16 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const addToWishlist = async (productId: string, variantId?: string) => {
     if (!user) {
-      alert('Please sign in to add items to your wishlist');
+      const guestItem: WishlistItem = {
+        id: productId,
+        product_id: productId,
+        variant_id: variantId || null,
+        created_at: new Date().toISOString(),
+      };
+      if (isInWishlist(productId, variantId)) return;
+      const next = [...items, guestItem];
+      setItems(next);
+      persistGuestWishlist(next);
       return;
     }
 
@@ -76,12 +133,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           variant_id: variantId || null,
         });
 
-      if (error) throw error;
+      if (error && error.code !== '23505') throw error;
       await fetchWishlist();
     } catch (error: any) {
-      if (error.code === '23505') {
-        console.log('Item already in wishlist');
-      } else {
+      if (error.code !== '23505') {
         console.error('Error adding to wishlist:', error);
         alert('Failed to add to wishlist');
       }
@@ -89,7 +144,15 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromWishlist = async (productId: string, variantId?: string) => {
-    if (!user) return;
+    if (!user) {
+      const next = items.filter(
+        (item) =>
+          !(item.product_id === productId && (variantId ? item.variant_id === variantId : !item.variant_id))
+      );
+      setItems(next);
+      persistGuestWishlist(next);
+      return;
+    }
 
     try {
       let query = supabase
