@@ -20,6 +20,7 @@ interface QuickViewProps {
 
 export default function QuickView({ isOpen, onClose, product }: QuickViewProps) {
   const [selectedColor, setSelectedColor] = useState<number>(0);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -134,18 +135,26 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
                 {product.sizes && product.sizes.length > 0 && (
                   <div>
                     <label className="block text-xs tracking-wider uppercase mb-3 font-semibold">
-                      Sizes
+                      Size {selectedSize && <span className="text-gray-500">— {selectedSize}</span>}
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {product.sizes.map((size) => (
-                        <span
+                        <button
                           key={size}
-                          className="px-3 py-1 border border-gray-300 text-xs tracking-wider uppercase bg-white"
+                          onClick={() => setSelectedSize(size)}
+                          className={`px-4 py-2 border text-xs tracking-wider uppercase transition-all ${
+                            selectedSize === size
+                              ? 'border-black bg-black text-white'
+                              : 'border-gray-300 bg-white hover:border-black'
+                          }`}
                         >
                           {size}
-                        </span>
+                        </button>
                       ))}
                     </div>
+                    {!selectedSize && (
+                      <p className="text-xs text-gray-500 mt-2">Please select a size</p>
+                    )}
                   </div>
                 )}
               </div>
@@ -154,11 +163,16 @@ export default function QuickView({ isOpen, onClose, product }: QuickViewProps) 
             <div className="space-y-4">
               <button
                 onClick={handleAddToCart}
-                className="w-full py-3 bg-black text-white flex items-center justify-center space-x-3 hover:bg-gray-800 transition-all group shadow-lg hover:shadow-2xl hover:scale-105"
+                disabled={product.sizes && product.sizes.length > 0 && !selectedSize}
+                className={`w-full py-3 flex items-center justify-center space-x-3 transition-all group shadow-lg ${
+                  product.sizes && product.sizes.length > 0 && !selectedSize
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-gray-800 hover:shadow-2xl hover:scale-105'
+                }`}
               >
                 <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span className="text-sm tracking-widest uppercase">
-                  Add to Bag
+                  {product.sizes && product.sizes.length > 0 && !selectedSize ? 'Select a Size' : 'Add to Bag'}
                 </span>
               </button>
 
