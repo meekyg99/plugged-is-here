@@ -16,7 +16,10 @@ interface ProductDisplay {
   images: string[];
   colors: { name: string; hex: string }[];
   sizes: string[];
+  variants: ProductWithDetails['variants'];
   defaultVariantId: string;
+  stockBadge: string | null;
+  inStock: boolean;
 }
 
 export default function ProductGrid() {
@@ -78,6 +81,15 @@ export default function ProductGrid() {
           const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
           const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 0;
 
+          const positiveStocks = product.variants.map(v => v.stock_quantity).filter(q => q > 0);
+          const minPositiveStock = positiveStocks.length > 0 ? Math.min(...positiveStocks) : 0;
+          const lowStockThreshold = product.variants.length > 0
+            ? Math.min(...product.variants.map(v => v.low_stock_threshold || 1))
+            : 1;
+          const inStock = positiveStocks.length > 0;
+          const isLowStock = minPositiveStock > 0 && minPositiveStock <= lowStockThreshold;
+          const stockBadge = !inStock ? 'Sold Out' : isLowStock ? `Only ${minPositiveStock} left` : null;
+
           const sortedImages = [...product.images].sort((a, b) => a.display_order - b.display_order);
 
           return {
@@ -91,7 +103,10 @@ export default function ProductGrid() {
             images: sortedImages.map(img => img.image_url),
             colors: uniqueColors,
             sizes: uniqueSizes,
-            defaultVariantId: product.variants[0]?.id || '',
+            variants: product.variants,
+            defaultVariantId: (product.variants.find(v => v.stock_quantity > 0) || product.variants[0])?.id || '',
+            stockBadge,
+            inStock,
           };
         });
       setProducts(displayProducts);
@@ -190,6 +205,11 @@ export default function ProductGrid() {
                 <div
                   className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden shadow-md"
                 >
+                  {product.stockBadge && (
+                    <span className="absolute top-3 left-3 z-10 bg-black text-white text-[11px] tracking-wide uppercase px-3 py-1 shadow-md">
+                      {product.stockBadge}
+                    </span>
+                  )}
                   <img
                     src={product.images[0]}
                     alt={product.name}
@@ -230,9 +250,17 @@ export default function ProductGrid() {
                   </div>
                 </div>
 
-                <div className="mt-4 w-full h-12 bg-black text-white flex items-center justify-center space-x-2 cursor-pointer">
+                <div
+                  className={`mt-4 w-full h-12 flex items-center justify-center space-x-2 cursor-pointer ${
+                    product.inStock
+                      ? 'bg-black text-white'
+                      : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                  }`}
+                >
                   <ShoppingCart className="w-4 h-4" />
-                  <span className="text-xs tracking-wider uppercase">View & Add</span>
+                  <span className="text-xs tracking-wider uppercase">
+                    {product.inStock ? 'View & Add' : 'Sold Out'}
+                  </span>
                 </div>
               </div>
             </div>
