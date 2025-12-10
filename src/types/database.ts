@@ -204,4 +204,5 @@ export interface CartItem {
   quantity: number;
   product?: Product;
   variant?: ProductVariant;
+  image_url?: string;
 }

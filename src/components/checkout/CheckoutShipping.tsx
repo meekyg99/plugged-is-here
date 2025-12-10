@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NIGERIAN_STATES } from '../../constants/nigerianStates';
 import { Address } from '../../types/database';
 import { validateAddress, validateEmail } from '../../utils/validation';
@@ -29,10 +29,28 @@ export default function CheckoutShipping({ data, onUpdate, onNext, onBack }: Che
       address_line2: '',
       city: '',
       state: '',
-      postal_code: '',
       country: 'Nigeria',
     }
   );
+
+  useEffect(() => {
+    const saved = localStorage.getItem('checkoutProfile');
+    if (saved && !data.shippingAddress) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.shippingAddress) {
+          setShippingForm(parsed.shippingAddress);
+          onUpdate({
+            email: parsed.email || data.email,
+            shippingAddress: parsed.shippingAddress,
+            billingAddress: parsed.billingAddress || parsed.shippingAddress,
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to load saved checkout profile', error);
+      }
+    }
+  }, [data.email, data.shippingAddress, onUpdate]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -69,7 +87,6 @@ export default function CheckoutShipping({ data, onUpdate, onNext, onBack }: Che
         address_line2: shippingForm.address_line2 ? sanitizeInput(shippingForm.address_line2) : '',
         city: sanitizeInput(shippingForm.city),
         state: sanitizeInput(shippingForm.state),
-        postal_code: shippingForm.postal_code ? sanitizeInput(shippingForm.postal_code) : '',
         country: shippingForm.country || 'Nigeria',
       };
       
@@ -77,6 +94,12 @@ export default function CheckoutShipping({ data, onUpdate, onNext, onBack }: Che
         shippingAddress: sanitizedForm,
         billingAddress: data.useSameAddress ? sanitizedForm : data.billingAddress,
       });
+
+      localStorage.setItem('checkoutProfile', JSON.stringify({
+        email: data.email,
+        shippingAddress: sanitizedForm,
+        billingAddress: data.useSameAddress ? sanitizedForm : data.billingAddress,
+      }));
       onNext();
     }
   };
@@ -169,7 +192,7 @@ export default function CheckoutShipping({ data, onUpdate, onNext, onBack }: Che
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm tracking-wider uppercase mb-2">
               City *
@@ -206,17 +229,6 @@ export default function CheckoutShipping({ data, onUpdate, onNext, onBack }: Che
             {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
           </div>
 
-          <div>
-            <label className="block text-sm tracking-wider uppercase mb-2">
-              Postal Code
-            </label>
-            <input
-              type="text"
-              value={shippingForm.postal_code || ''}
-              onChange={(e) => updateField('postal_code', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black transition-colors"
-            />
-          </div>
         </div>
 
         <div className="pt-6 border-t border-gray-200">

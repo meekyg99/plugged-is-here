@@ -62,7 +62,6 @@ export interface AddressValidationErrors {
   address_line1?: string;
   city?: string;
   state?: string;
-  postal_code?: string;
   country?: string;
 }
 
@@ -73,7 +72,6 @@ export const validateAddress = (address: {
   address_line2?: string;
   city?: string;
   state?: string;
-  postal_code?: string;
   country?: string;
 }): { valid: boolean; errors: AddressValidationErrors } => {
   const errors: AddressValidationErrors = {};
@@ -108,10 +106,6 @@ export const validateAddress = (address: {
     errors.state = 'State is required';
   } else if (address.state && address.country === 'Nigeria' && !validateNigerianState(address.state)) {
     errors.state = 'Please select a valid Nigerian state';
-  }
-
-  if (address.postal_code && address.country === 'Nigeria' && !validatePostalCode(address.postal_code)) {
-    errors.postal_code = 'Postal code must be 6 digits';
   }
 
   if (!validateRequiredField(address.country)) {

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { CartItem, ProductVariant, Product } from '../types/database';
+import { CartItem, ProductVariant, Product, ProductImage } from '../types/database';
 import { supabase } from '../lib/supabase';
 
 interface CartContextType {
@@ -51,7 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       const { data: variants, error: variantError } = await supabase
         .from('product_variants')
-        .select('*, product:products(*)')
+        .select('*, product:products(*, images:product_images(*))')
         .in('id', variantIds);
 
       if (variantError) throw variantError;
@@ -60,10 +60,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         prevItems.map(item => {
           const variantData = variants?.find(v => v.id === item.variant_id);
           if (variantData) {
+            const productWithImages = variantData.product as Product & { images?: ProductImage[] };
+            const primaryImage = productWithImages.images
+              ? [...productWithImages.images].sort((a, b) => a.display_order - b.display_order)[0]
+              : undefined;
             return {
               ...item,
               variant: variantData as ProductVariant,
-              product: variantData.product as Product,
+              product: productWithImages,
+              image_url: primaryImage?.image_url,
             };
           }
           return item;
@@ -96,18 +101,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         const { data: product, error: productError } = await supabase
           .from('products')
-          .select('*')
+          .select('*, images:product_images(*)')
           .eq('id', productId)
           .single();
 
         if (productError) throw productError;
+
+        const productWithImages = product as Product & { images?: ProductImage[] };
+        const primaryImage = productWithImages.images
+          ? [...productWithImages.images].sort((a, b) => a.display_order - b.display_order)[0]
+          : undefined;
 
         const newItem: CartItem = {
           variant_id: variantId,
           product_id: productId,
           quantity,
           variant,
-          product,
+          product: productWithImages,
+          image_url: primaryImage?.image_url,
         };
 
         setItems([...items, newItem]);

@@ -230,11 +230,12 @@ export default function CheckoutReview({ data , onBack }: CheckoutReviewProps) {
           <div className="space-y-4">
             {items.map((item) => (
               <div key={item.variant_id} className="flex gap-4">
-                <div className="w-16 h-16 bg-gray-100 flex-shrink-0">
+                <div className="w-16 h-16 bg-gray-100 flex-shrink-0 overflow-hidden">
                   <img
-                    src="https://images.pexels.com/photos/5240696/pexels-photo-5240696.jpeg"
-                    alt={item.product?.name}
+                    src={item.image_url || (item.product as any)?.images?.[0]?.image_url || ''}
+                    alt={item.product?.name || 'Product image'}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <div className="flex-1">
@@ -261,10 +262,6 @@ export default function CheckoutReview({ data , onBack }: CheckoutReviewProps) {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Shipping</span>
             <span>₦{shippingCost.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Tax</span>
-            <span>₦0</span>
           </div>
           <div className="flex justify-between text-lg font-medium pt-2 border-t border-gray-200">
             <span className="tracking-wider uppercase">Total</span>
