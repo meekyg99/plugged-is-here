@@ -375,64 +375,89 @@ export default function ContentPage() {
 
                 {heroMain.background_type === 'gradient' ? (
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
-                        Gradient From Color
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={heroMain.gradient_from || '#fef3c7'}
-                          onChange={(e) => setHeroMain({ ...heroMain, gradient_from: e.target.value })}
-                          className="flex-1 px-4 py-2 border border-gray-300 focus:outline-none focus:border-black"
-                        />
-                        <input
-                          type="color"
-                          value={heroMain.gradient_from || '#fef3c7'}
-                          onChange={(e) => setHeroMain({ ...heroMain, gradient_from: e.target.value })}
-                          className="w-16 h-10 border border-gray-300"
-                        />
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-gray-600 mb-1">
+                          From
+                        </label>
+                        <div className="flex flex-col gap-1">
+                          <input
+                            type="color"
+                            value={heroMain.gradient_from || '#fef3c7'}
+                            onChange={(e) => setHeroMain({ ...heroMain, gradient_from: e.target.value })}
+                            className="w-full h-10 border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={heroMain.gradient_from || '#fef3c7'}
+                            onChange={(e) => setHeroMain({ ...heroMain, gradient_from: e.target.value })}
+                            className="w-full px-2 py-1 border border-gray-300 text-xs focus:outline-none focus:border-black"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-gray-600 mb-1">
+                          Via
+                        </label>
+                        <div className="flex flex-col gap-1">
+                          <input
+                            type="color"
+                            value={heroMain.gradient_via || '#fed7aa'}
+                            onChange={(e) => setHeroMain({ ...heroMain, gradient_via: e.target.value })}
+                            className="w-full h-10 border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={heroMain.gradient_via || '#fed7aa'}
+                            onChange={(e) => setHeroMain({ ...heroMain, gradient_via: e.target.value })}
+                            className="w-full px-2 py-1 border border-gray-300 text-xs focus:outline-none focus:border-black"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-gray-600 mb-1">
+                          To
+                        </label>
+                        <div className="flex flex-col gap-1">
+                          <input
+                            type="color"
+                            value={heroMain.gradient_to || '#fecdd3'}
+                            onChange={(e) => setHeroMain({ ...heroMain, gradient_to: e.target.value })}
+                            className="w-full h-10 border border-gray-300 cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={heroMain.gradient_to || '#fecdd3'}
+                            onChange={(e) => setHeroMain({ ...heroMain, gradient_to: e.target.value })}
+                            className="w-full px-2 py-1 border border-gray-300 text-xs focus:outline-none focus:border-black"
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
-                        Gradient Via Color
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <label className="block text-xs uppercase tracking-wider text-gray-600 mb-2">
+                        Reference Image (for color picking)
                       </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={heroMain.gradient_via || '#fed7aa'}
-                          onChange={(e) => setHeroMain({ ...heroMain, gradient_via: e.target.value })}
-                          className="flex-1 px-4 py-2 border border-gray-300 focus:outline-none focus:border-black"
-                        />
-                        <input
-                          type="color"
-                          value={heroMain.gradient_via || '#fed7aa'}
-                          onChange={(e) => setHeroMain({ ...heroMain, gradient_via: e.target.value })}
-                          className="w-16 h-10 border border-gray-300"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm uppercase tracking-wider text-gray-700 mb-2">
-                        Gradient To Color
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={heroMain.gradient_to || '#fecdd3'}
-                          onChange={(e) => setHeroMain({ ...heroMain, gradient_to: e.target.value })}
-                          className="flex-1 px-4 py-2 border border-gray-300 focus:outline-none focus:border-black"
-                        />
-                        <input
-                          type="color"
-                          value={heroMain.gradient_to || '#fecdd3'}
-                          onChange={(e) => setHeroMain({ ...heroMain, gradient_to: e.target.value })}
-                          className="w-16 h-10 border border-gray-300"
-                        />
-                      </div>
+                      <input
+                        type="url"
+                        value={heroMain.image_url || ''}
+                        onChange={(e) => setHeroMain({ ...heroMain, image_url: e.target.value })}
+                        placeholder="Paste image URL to eyedrop colors from"
+                        className="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black mb-2"
+                      />
+                      {heroMain.image_url && (
+                        <div className="relative">
+                          <img
+                            src={heroMain.image_url}
+                            alt="Reference for color picking"
+                            className="w-full h-32 object-cover border border-gray-200 rounded"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Hover with color picker tool to sample colors</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
