@@ -49,7 +49,12 @@ export default async function handler(req: any, res: any) {
   const secret = process.env.MAILJET_API_SECRET;
   const fromRaw = process.env.MAILJET_FROM || "Plugged <info@pluggedby212.shop>";
 
+  console.log('[EMAIL] API Key present:', !!key);
+  console.log('[EMAIL] API Secret present:', !!secret);
+  console.log('[EMAIL] From address:', fromRaw);
+
   if (!key || !secret) {
+    console.error('[EMAIL] Missing Mailjet credentials');
     sendJson(res, 500, { error: "Mailjet secrets not configured" });
     return;
   }
@@ -78,6 +83,7 @@ export default async function handler(req: any, res: any) {
 
     const data = await mjRes.json();
     if (!mjRes.ok) {
+      console.error('[EMAIL] Mailjet API error:', mjRes.status, data);
       sendJson(res, mjRes.status, { error: data });
       return;
     }
