@@ -40,7 +40,7 @@ export function WelcomeEmail({ userName, shopUrl = 'https://plugged.com' }: Welc
       
       <p>
         If you have any questions, our support team is always here to help. Just reply to this email or 
-        contact us at <a href="mailto:support@plugged.com" style={{ color: '#667eea' }}>support@plugged.com</a>.
+        contact us at <a href="mailto:info@pluggedby212.shop" style={{ color: '#667eea' }}>info@pluggedby212.shop</a>.
       </p>
       
       <p style={{ marginTop: '30px' }}>
@@ -91,7 +91,7 @@ export function renderWelcomeEmail(props: WelcomeEmailProps): string {
         <div style="text-align:center;margin:30px 0;">
           <a href="${props.shopUrl || 'https://plugged.com'}" class="btn">Start Shopping Now</a>
         </div>
-        <p>If you have any questions, our support team is always here to help. Just reply to this email or contact us at <a href="mailto:support@plugged.com" style="color:#667eea;">support@plugged.com</a>.</p>
+        <p>If you have any questions, our support team is always here to help. Just reply to this email or contact us at <a href="mailto:info@pluggedby212.shop" style="color:#667eea;">info@pluggedby212.shop</a>.</p>
         <p style="margin-top:30px;">Happy shopping!<br><strong>The PLUGGED Team</strong></p>
       </div>
       <div class="footer">
@@ -100,7 +100,7 @@ export function renderWelcomeEmail(props: WelcomeEmailProps): string {
           <a href="https://twitter.com/plugged">Twitter</a>
           <a href="https://instagram.com/plugged">Instagram</a>
         </div>
-        <p><strong>PLUGGED</strong><br>Your trusted online store<br><a href="mailto:support@plugged.com" style="color:#667eea;">support@plugged.com</a></p>
+        <p><strong>PLUGGED</strong><br>Your trusted online store<br><a href="mailto:info@pluggedby212.shop" style="color:#667eea;">info@pluggedby212.shop</a></p>
         <p style="font-size:12px;color:#999;margin-top:20px;">You're receiving this email because you have an account with us.</p>
       </div>
     </div>

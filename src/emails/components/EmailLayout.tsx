@@ -116,7 +116,7 @@ export function EmailLayout({ previewText, children }: EmailLayoutProps) {
             <p>
               <strong>PLUGGED</strong><br />
               Your trusted online store<br />
-              <a href="mailto:support@plugged.com" style={{ color: '#667eea' }}>support@plugged.com</a>
+              <a href="mailto:info@pluggedby212.shop" style={{ color: '#667eea' }}>info@pluggedby212.shop</a>
             </p>
             <p style={{ fontSize: '12px', color: '#999', marginTop: '20px' }}>
               You're receiving this email because you have an account with us.<br />

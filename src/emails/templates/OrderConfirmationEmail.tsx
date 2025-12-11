@@ -158,7 +158,7 @@ export function renderOrderConfirmationEmail(props: OrderConfirmationEmailProps)
 
         <div class="highlight-box">
           <p style="margin:0;"><strong>💡 Need Help?</strong></p>
-          <p style="margin:5px 0 0 0;">If you have any questions about your order, please contact us at <a href="mailto:support@plugged.com" style="color:#667eea;">support@plugged.com</a> or reply to this email with your order number.</p>
+          <p style="margin:5px 0 0 0;">If you have any questions about your order, please contact us at <a href="mailto:info@pluggedby212.shop" style="color:#667eea;">info@pluggedby212.shop</a> or reply to this email with your order number.</p>
         </div>
 
         <p style="margin-top:30px;">
@@ -172,7 +172,7 @@ export function renderOrderConfirmationEmail(props: OrderConfirmationEmailProps)
           <a href="https://twitter.com/plugged">Twitter</a>
           <a href="https://instagram.com/plugged">Instagram</a>
         </div>
-        <p><strong>PLUGGED</strong><br>Your trusted online store<br><a href="mailto:support@plugged.com" style="color:#667eea;">support@plugged.com</a></p>
+        <p><strong>PLUGGED</strong><br>Your trusted online store<br><a href="mailto:info@pluggedby212.shop" style="color:#667eea;">info@pluggedby212.shop</a></p>
         <p style="font-size:12px;color:#999;margin-top:20px;">You're receiving this email because you placed an order with us.</p>
       </div>
     </div>

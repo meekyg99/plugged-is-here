@@ -121,7 +121,7 @@ export function renderOrderStatusEmail(props: OrderStatusEmailProps): string {
         ` : ''}
 
         <p style="margin-top:30px;">
-          If you have any questions, feel free to contact us at <a href="mailto:support@plugged.com" style="color:#667eea;">support@plugged.com</a>.
+          If you have any questions, feel free to contact us at <a href="mailto:info@pluggedby212.shop" style="color:#667eea;">info@pluggedby212.shop</a>.
         </p>
 
         <p style="margin-top:30px;">
@@ -135,7 +135,7 @@ export function renderOrderStatusEmail(props: OrderStatusEmailProps): string {
           <a href="https://twitter.com/plugged">Twitter</a>
           <a href="https://instagram.com/plugged">Instagram</a>
         </div>
-        <p><strong>PLUGGED</strong><br>Your trusted online store<br><a href="mailto:support@plugged.com" style="color:#667eea;">support@plugged.com</a></p>
+        <p><strong>PLUGGED</strong><br>Your trusted online store<br><a href="mailto:info@pluggedby212.shop" style="color:#667eea;">info@pluggedby212.shop</a></p>
         <p style="font-size:12px;color:#999;margin-top:20px;">You're receiving this email because you placed an order with us.</p>
       </div>
     </div>
