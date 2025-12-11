@@ -19,9 +19,42 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  // Get cart key based on user
+  const getCartKey = (userId: string | null) => {
+    return userId ? `cart_${userId}` : 'cart_guest';
+  };
+
+  // Listen for auth state changes and clear cart when user changes
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const newUserId = session?.user?.id || null;
+      
+      // If user changed (login/logout/signup), clear cart and load new user's cart
+      if (newUserId !== currentUserId) {
+        console.log('User changed, clearing cart. Old:', currentUserId, 'New:', newUserId);
+        setItems([]);
+        setCurrentUserId(newUserId);
+        loadCartFromStorage(newUserId);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [currentUserId]);
+
+  // Initial load
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const userId = session?.user?.id || null;
+      setCurrentUserId(userId);
+      loadCartFromStorage(userId);
+    });
+  }, []);
+
+  const loadCartFromStorage = (userId: string | null) => {
+    const cartKey = getCartKey(userId);
+    const savedCart = localStorage.getItem(cartKey);
     if (savedCart) {
       try {
         const parsedCart = JSON.parse(savedCart);
@@ -31,18 +64,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Error loading cart from localStorage:', error);
-        localStorage.removeItem('cart');
+        localStorage.removeItem(cartKey);
       }
     }
-  }, []);
+  };
 
   useEffect(() => {
+    const cartKey = getCartKey(currentUserId);
     if (items.length > 0) {
-      localStorage.setItem('cart', JSON.stringify(items));
+      localStorage.setItem(cartKey, JSON.stringify(items));
     } else {
-      localStorage.removeItem('cart');
+      localStorage.removeItem(cartKey);
     }
-  }, [items]);
+  }, [items, currentUserId]);
 
   const loadCartItemDetails = async (cartItems: CartItem[]) => {
     try {
