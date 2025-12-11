@@ -16,6 +16,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: A
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showEmailConfirmNotice, setShowEmailConfirmNotice] = useState(false);
   const { signIn, signUp } = useAuth();
 
   if (!isOpen) return null;
@@ -64,7 +65,8 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: A
           // Error message is already sanitized by AuthContext
           setError(error.message);
         } else {
-          onClose();
+          // Show email confirmation notice
+          setShowEmailConfirmNotice(true);
           resetForm();
         }
       }
@@ -92,21 +94,71 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: A
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white max-w-md w-full p-8 relative">
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            setShowEmailConfirmNotice(false);
+          }}
           className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-2xl font-light tracking-wider uppercase mb-6">
-          {mode === 'signin' ? 'Sign In' : 'Create Account'}
-        </h2>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm">
-            {error}
+        {showEmailConfirmNotice ? (
+          // Email Confirmation Notice
+          <div className="text-center py-4">
+            <div className="mb-6">
+              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Check Your Email
+            </h2>
+            
+            <p className="text-gray-600 mb-6">
+              We've sent a confirmation email to your inbox. Please check your email and click the confirmation link to activate your account.
+            </p>
+            
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-left">
+              <p className="text-sm text-yellow-800">
+                <strong>📬 Don't see it?</strong> Check your spam or junk folder.
+              </p>
+            </div>
+            
+            <div className="text-sm text-gray-500 space-y-2">
+              <p>
+                Email sent from: <br />
+                <strong className="text-gray-700">info@pluggedby212.shop</strong>
+              </p>
+              <p className="pt-4">
+                <a 
+                  href="https://pluggedby212.shop" 
+                  className="text-blue-600 hover:text-blue-800 underline"
+                  onClick={() => {
+                    onClose();
+                    setShowEmailConfirmNotice(false);
+                  }}
+                >
+                  Return to PLUGGED
+                </a>
+              </p>
+            </div>
           </div>
-        )}
+        ) : (
+          // Login/Signup Form
+          <>
+            <h2 className="text-2xl font-light tracking-wider uppercase mb-6">
+              {mode === 'signin' ? 'Sign In' : 'Create Account'}
+            </h2>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm">
+                {error}
+              </div>
+            )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
@@ -171,6 +223,8 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: A
             {mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
           </button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

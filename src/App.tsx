@@ -17,6 +17,7 @@ import TrackOrderPage from './pages/TrackOrderPage';
 import AccountPage from './pages/AccountPage';
 import OrdersListPage from './pages/OrdersListPage';
 import WishlistPage from './pages/WishlistPage';
+import EmailConfirmationPage from './pages/EmailConfirmationPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import OrdersPage from './pages/admin/OrdersPage';
@@ -66,6 +67,7 @@ function App() {
               <Route path="/order-success" element={<AppLayout><OrderSuccessPage /></AppLayout>} />
               <Route path="/order-success/:orderId" element={<AppLayout><OrderSuccessPage /></AppLayout>} />
               <Route path="/track-order" element={<AppLayout><TrackOrderPage /></AppLayout>} />
+              <Route path="/auth/callback" element={<EmailConfirmationPage />} />
               <Route path="/account" element={<AppLayout><ProtectedRoute><AccountPage /></ProtectedRoute></AppLayout>} />
               <Route path="/orders" element={<AppLayout><ProtectedRoute><OrdersListPage /></ProtectedRoute></AppLayout>} />
               <Route path="/wishlist" element={<AppLayout><ProtectedRoute><WishlistPage /></ProtectedRoute></AppLayout>} />
