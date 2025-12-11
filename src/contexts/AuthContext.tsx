@@ -104,10 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: {
             full_name: sanitizedName,
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       
       if (error) {
+        console.error('Signup error:', error);
         // Never reveal if email exists - use generic message
         return { error: new Error(SecureErrors.AUTH_GENERIC) };
       }
@@ -115,20 +117,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Send welcome email (non-blocking - don't fail signup if email fails)
       if (data.user) {
         sendWelcomeEmail(trimmedEmail, sanitizedName, window.location.origin)
-          .catch(() => { /* Silently fail - don't expose email errors */ });
-
-        // Send Supabase-generated verification link with our custom template via edge function
-        supabase.functions.invoke('auth-email', {
-          body: {
-            type: 'verify',
-            email: trimmedEmail,
-            userName: sanitizedName,
-          },
-        }).catch(() => { /* do not block signup on email errors */ });
+          .catch((err) => { 
+            console.error('Welcome email failed:', err);
+          });
       }
       
       return { error: null };
     } catch (error) {
+      console.error('Signup exception:', error);
       // Never expose internal errors
       return { error: new Error(toSafeError(error, 'signUp')) };
     }
