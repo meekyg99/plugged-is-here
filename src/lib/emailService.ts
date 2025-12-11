@@ -1,6 +1,3 @@
-const MAILJET_KEY = import.meta.env.VITE_MAILJET_API_KEY;
-const MAILJET_SECRET = import.meta.env.VITE_MAILJET_API_SECRET;
-const FROM_EMAIL_RAW = import.meta.env.VITE_EMAIL_FROM_ADDRESS || 'Plugged <info@pluggedby212.shop>';
 const BRAND_NAME = 'Plugged';
 const BRAND_COLOR = '#000000';
 const WEBSITE_URL = 'https://pluggedby212.shop';
@@ -131,42 +128,13 @@ const emailTemplate = (content: string, preheader?: string) => `
 </html>
 `;
 
-// Send email function
-const parseFrom = (raw: string) => {
-  const match = raw.match(/^(.*)<(.+)>$/);
-  if (match) {
-    return { name: match[1].trim() || 'Plugged', email: match[2].trim() };
-  }
-  return { name: 'Plugged', email: raw.trim() };
-};
-
-const { name: FROM_NAME, email: FROM_EMAIL } = parseFrom(FROM_EMAIL_RAW);
-
 async function sendEmail({ to, subject, html }: EmailOptions) {
-  if (!MAILJET_KEY || !MAILJET_SECRET) {
-    console.warn('Email service not configured - skipping email send');
-    return { success: false, error: 'Email service not configured' };
-  }
   try {
-    const auth = btoa(`${MAILJET_KEY}:${MAILJET_SECRET}`);
-    const payload = {
-      Messages: [
-        {
-          From: { Email: FROM_EMAIL, Name: FROM_NAME },
-          To: [{ Email: to }],
-          Subject: subject,
-          HTMLPart: html,
-        },
-      ],
-    };
-
-    const res = await fetch('https://api.mailjet.com/v3.1/send', {
+    const endpoint = `${typeof window !== 'undefined' ? '' : 'https://pluggedby212.shop'}/api/send-email`;
+    const res = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, subject, html }),
     });
 
     if (!res.ok) {
@@ -174,12 +142,12 @@ async function sendEmail({ to, subject, html }: EmailOptions) {
       throw new Error(`Mailjet send failed (${res.status}): ${text}`);
     }
 
-    const data = await res.json();
-    console.log('Email sent successfully:', data);
+    const data = await res.json().catch(() => ({}));
+    console.log('Email sent via serverless:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Failed to send email:', error);
-    return { success: false, error };
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 

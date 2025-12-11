@@ -156,6 +156,18 @@ export default function OrderDetailPage() {
         throw new Error(result.error || 'Failed to cancel order');
       }
 
+      // Notify customer about cancellation (non-blocking)
+      const shippingAddr = order.shipping_address as any;
+      sendOrderStatusEmail(order.email, {
+        orderNumber: order.order_number,
+        trackingId: order.tracking_id,
+        status: 'cancelled',
+        customerName: shippingAddr?.full_name || 'Customer',
+        trackingNumber: undefined,
+        trackingUrl: `${window.location.origin}/track-order`,
+        estimatedDelivery: undefined,
+      }).catch(err => console.error('Failed to send cancellation email:', err));
+
       await fetchOrderDetails();
       alert('Order cancelled successfully.');
     } catch (error: any) {

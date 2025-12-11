@@ -2,7 +2,7 @@ interface OrderStatusEmailProps {
   orderNumber: string;
   trackingId: string;
   customerName: string;
-  status: 'processing' | 'shipped' | 'delivered';
+  status: 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'payment_failed';
   trackingNumber?: string;
   trackingUrl?: string;
   carrier?: string;
@@ -37,6 +37,20 @@ export function renderOrderStatusEmail(props: OrderStatusEmailProps): string {
           highlight: props.deliveredDate 
             ? `Delivered on ${props.deliveredDate}`
             : 'Your package has arrived!',
+        };
+      case 'cancelled':
+        return {
+          emoji: '❌',
+          title: 'Your Order Was Cancelled',
+          message: 'Your order has been cancelled. If this was a mistake, please contact support immediately.',
+          highlight: 'If you believe this was in error, reply to this email and our team will help.',
+        };
+      case 'payment_failed':
+        return {
+          emoji: '⚠️',
+          title: 'Payment Failed — Action Needed',
+          message: 'We couldn’t process the payment for your order. Please update your payment method to complete your purchase.',
+          highlight: 'Update your payment details to avoid cancellation. If you were charged, contact support and we will help.',
         };
     }
   };

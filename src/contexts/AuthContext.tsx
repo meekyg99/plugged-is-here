@@ -116,6 +116,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.user) {
         sendWelcomeEmail(trimmedEmail, sanitizedName, window.location.origin)
           .catch(() => { /* Silently fail - don't expose email errors */ });
+
+        // Send Supabase-generated verification link with our custom template via edge function
+        supabase.functions.invoke('auth-email', {
+          body: {
+            type: 'verify',
+            email: trimmedEmail,
+            userName: sanitizedName,
+          },
+        }).catch(() => { /* do not block signup on email errors */ });
       }
       
       return { error: null };

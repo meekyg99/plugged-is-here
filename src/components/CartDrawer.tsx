@@ -36,12 +36,17 @@ export default function CartDrawer() {
               <div className="space-y-6">
                 {items.map((item) => (
                   <div key={item.variant_id} className="flex gap-4">
-                    <div className="w-20 h-20 bg-gray-100 flex-shrink-0">
+                    <div className="w-20 h-20 bg-gray-100 flex-shrink-0 overflow-hidden">
                       {item.product && (
                         <img
-                          src={`https://images.pexels.com/photos/5240696/pexels-photo-5240696.jpeg`}
+                          src={
+                            item.image_url ||
+                            (Array.isArray((item.product as any)?.images) && (item.product as any).images[0]?.image_url) ||
+                            ''
+                          }
                           alt={item.product.name}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       )}
                     </div>
